@@ -1,9 +1,8 @@
-const express = require('express');
-const request = require('request');
-const cors = require('cors');
-const https = require('https');
-const fs = require('fs');
-
+import express from 'express';
+import cors from 'cors';
+import fs from 'node:fs';
+import https from 'node:https';
+import { Agent, fetch } from 'undici'; // axios wasnt working and request is deprecated
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,8 +11,8 @@ const base_url = "https://rb-alm-14-p.de.bosch.com/ccm/rpt/repository"
 
 // Load SSL certificates
 const certificates = {
-    key: fs.readFileSync('server.key'), // Path to your private key
-    cert: fs.readFileSync('server.cert'), // Path to your certificate
+    key: fs.readFileSync('../secrets/server.key'), // Path to your private key
+    cert: fs.readFileSync('../secrets/server.cert'), // Path to your certificate
 };
 
 // Enable CORS for all routes
@@ -23,31 +22,27 @@ app.use(cors({
 }));
 
 // Request function
-const pollAPI = async (url, username, password) => {
-    const authOptions = {
-        url: url,
-        method: 'GET',
-        auth: {
-            username: username,
-            password: password
-        },
-        headers: {
-            'Content-Type': 'application/json', // Ensure proper headers
-            'Accept': 'application/xml' // Request XML response
-        },
-        rejectUnauthorized: false // Ignore self-signed certificate
-    };
-
-    return new Promise((resolve, reject) => {
-        request(authOptions, (error, response, body) => {
-            if (error) {
-                console.error('Error:', error);
-                resolve([500, response, error]);
-            } else {
-                resolve([response.statusCode, response, body]);
-            }
+const pollAPI = async (url: string, username: string, password: string): Promise<[number, string]> => {
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json', // Ensure proper headers
+                'Accept': 'application/xml', // Request XML response
+                'Authorization': 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64'),
+            },
+            // Use undici's fetch with custom agent
+            dispatcher: new Agent({
+                connect: { rejectUnauthorized: false } // Ignore self-signed certificate
+            })
         });
-    });
+
+        const responseBody = await response.text(); // Fetch response body as text
+        return [response.status, responseBody];
+    } catch (error) {
+        console.error('Error:', error);
+        return [500, String(error)];
+    }
 };
 
 // Proxy route
@@ -66,7 +61,7 @@ app.use('/api', (req, res) => {
         }
         const url = base_url + req.url; // Replace with your API URL
         console.log(url)
-        pollAPI(url, data.username, data.password).then(([api_status, api_res, api_body]) => {
+        pollAPI(url, data.username, data.password).then(([api_status, api_body]) => {
             if (api_status === 500) {
                 console.error('Error during authentication:', api_body);
                 res.status(500).send({ error: 'Authentication failed' });
@@ -74,7 +69,7 @@ app.use('/api', (req, res) => {
                 console.error('Unauthorized access:', api_body);
                 res.status(401).send({ error: 'Unauthorized access' });
             } else {
-                res.status(api_status).send(api_res); // Send XML response directly
+                res.status(api_status).send(api_body); // Send XML response directly
             }
         });
     });
@@ -87,15 +82,9 @@ app.use('/login', (req, res) => {
     });
 
     req.on('end', () => {
-        let data;
         try {
-            data = JSON.parse(body);
-        } catch (error) {
-            console.error('Error parsing JSON:', error);
-            res.status(400).send({ error: 'Invalid format' });
-        }
-
-        pollAPI(base_url, data.username, data.password).then(([api_status, api_res, api_body]) => {
+            const data = JSON.parse(body);
+            pollAPI(base_url, data.username, data.password).then(([api_status, api_body]) => {
             if (api_status === 500) {
                 console.error('Error during authentication:', api_body);
                 res.status(500).send({ error: 'Authentication failed' });
@@ -110,6 +99,10 @@ app.use('/login', (req, res) => {
             console.error('Error during API call:', error);
             res.status(500).send({ error: 'Internal server error' });
         });
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            res.status(400).send({ error: 'Invalid format' });
+        }
     });
 });
 
