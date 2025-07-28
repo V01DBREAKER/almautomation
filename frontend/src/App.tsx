@@ -20,8 +20,7 @@ function App() {
       const response = await axios.post(
         `${api}workitem?fields=workitem/workItem[id=${id}]/summary`, 
         {username: username, password: password });
-      
-      updateDescription(response.data.body)
+      updateDescription(response.data)
     } catch (error) {
       console.error('Fetch failed:', error);
     }
