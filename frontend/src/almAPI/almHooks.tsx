@@ -1,12 +1,17 @@
 import axios from 'axios';
+import { apiAccessUrl } from './almTypes';
 
-const api = "https://localhost:3001/api/"
-
-const getDescFromID = async (id: number, username:string, password:string):Promise<string> => {
+const getDescFromID = async (id: number, token: string):Promise<string> => {
     try{
+        const url = `${apiAccessUrl}workitem?fields=workitem/workItem[id=${id}]/summary`
         const response = await axios.post(
-        `${api}workitem?fields=workitem/workItem[id=${id}]/summary`, 
-        {username: username, password: password });
+        url, 
+        null, 
+        {
+            headers: {
+            'Authorization': token
+            }
+        });
         return response.data;
     } catch (error) {
         console.error('Fetch failed:', error);

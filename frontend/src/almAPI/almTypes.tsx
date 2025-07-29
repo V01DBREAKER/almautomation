@@ -239,5 +239,10 @@ interface apiWorkItem {
     workItem: Partial<almWorkItem>
 }
 
+const apiBaseUrl = "https://localhost:3001";
+const apiAccessUrl = apiBaseUrl + "/api/";
+const apiLoginUrl = apiBaseUrl + "/login/";
+
 export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState}
 export type {apiWorkItem}
+export {apiAccessUrl, apiLoginUrl}
