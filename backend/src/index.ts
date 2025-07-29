@@ -26,7 +26,7 @@ const auth_secret = fs.readFileSync('../secrets/auth.key');
 
 // Enable CORS for frontend
 app.use(cors({
-    origin: 'http://localhost:5173', // Allow only your React app's origin
+    origin: 'http://localhost:5173', // Allow only React frontend origin
     credentials: true // Allow credentials to be included
 }));
 

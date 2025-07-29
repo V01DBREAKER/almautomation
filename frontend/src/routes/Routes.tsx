@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, Navigate } from "react-router";
 import PrivateRoute from "./PrivateRoute";
 import Login from "../views/Login";
 import Dashboard from "../views/Dashboard";
@@ -9,9 +9,9 @@ const AppRoutes = () => {
         <Routes>
             <Route path="/login" element={<Login/>}/>
             <Route path="/" element={<PrivateRoute/>}> 
-                <Route path="/dashboard" element={<Dashboard/>}/>
+                <Route path="/" element={<Dashboard/>}/>
             </Route>
-            <Route path="*" element={<Login/>}/>
+            <Route path="*" element={<Navigate to="/login"/>} />
         </Routes>
     );
 };

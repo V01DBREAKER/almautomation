@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import type { loginCredentials } from '../almAPI/almAuth';
-import './App.css'
 import { useAuth } from '../hooks/AuthProvider';
+import { Navigate } from 'react-router';
+import './App.css'
 
 const Login: React.FC = () => {
   const [credentials, setCredentials] = useState<loginCredentials>({
@@ -14,8 +15,8 @@ const Login: React.FC = () => {
     e.preventDefault();
     auth?.login(credentials)
   }
-
   return (
+    auth?.token === "" ? (
     <>
       <div style={{ backgroundColor: 'lightcoral', padding: '10px', marginBottom: '10px' }}>
         Please log in to continue.
@@ -48,7 +49,7 @@ const Login: React.FC = () => {
         </form>
       </div>
     </>
-  );
+  ) : <Navigate to="/" />);
 };
 
 export default Login;

@@ -1,9 +1,9 @@
 import { useContext, createContext, useState } from "react";
 import apiLogin, { type loginCredentials } from "../almAPI/almAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 interface AuthContextType {
   // Define the shape of your context value here
-  user: string | null;
+  user: string;
   token: string;
   login: (credentials: loginCredentials) => void;
   logout: () => void;
@@ -16,7 +16,7 @@ interface AuthProviderProps {
 }
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<string | null>(null);
+    const [user, setUser] = useState<string>("");
     const [token, setToken] = useState<string>(localStorage.getItem("site") || "")
     const navigate = useNavigate()
     const authValue: AuthContextType = {
@@ -33,7 +33,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
         },
         logout: () => {
-            setUser(null)
+            setUser("")
             setToken("")
             localStorage.removeItem("site");
             console.log("Logged out.")
