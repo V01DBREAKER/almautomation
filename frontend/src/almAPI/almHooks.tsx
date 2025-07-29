@@ -14,4 +14,8 @@ const getDescFromID = async (id: number, username:string, password:string):Promi
     }
 };
 
-export { getDescFromID };
+const convertToDate = (dateString: string): Date => {
+    return new Date(dateString);
+}
+
+export { getDescFromID, convertToDate };

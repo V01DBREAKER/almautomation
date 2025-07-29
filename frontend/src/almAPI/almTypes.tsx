@@ -6,11 +6,11 @@ type almWorkItem = {
     stateId: string;
     itemId: string;
     contextId: string;
-    modified: Date;
+    modified: string;
     predecessor: string;                // seems to be predecessor state?
-    resolutionDate: Date;
+    resolutionDate: string;
     summary: string;                    // title/summary of work item
-    creationDate: Date;
+    creationDate: string;
     dueDate: Date | null;
     description: string;                // description of work item
     // workflowSurrogate: almWorkFlow | null;   
@@ -61,9 +61,9 @@ type almWorkItem = {
     // <floatComplexity/>
     // <longComplexity/>
     // <doubleComplexity/>
-    activationDate: Date;
-    plannedStartDate: Date; 
-    plannedEndDate: Date;
+    activationDate: string;
+    plannedStartDate: string; 
+    plannedEndDate: string;
 }
 
 type almUser = {
