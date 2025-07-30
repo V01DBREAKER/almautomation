@@ -235,14 +235,28 @@ type almExtension = {
     decimalValue: number | null;
 }
 
+type almQueryItem = {
+    dcidentifier: number
+    //add the rest from https://rb-alm-14-p.de.bosch.com/ccm/oslc/queries/_FBmkkNTZEe2dMeAfmKsDsQ/rtc_cm:results
+}
+
 interface apiWorkItem {
     workItem: Partial<almWorkItem>
 }
 
+interface apiQuery {
+    oslc_cmChangeRequest: [Partial<almQueryItem>]
+}
+
 const apiBaseUrl = "https://localhost:3001";
-const apiAccessUrl = apiBaseUrl + "/api/";
-const apiLoginUrl = apiBaseUrl + "/login/";
+const apiAccessUrl = apiBaseUrl + "/api";
+const apiLoginUrl = apiBaseUrl + "/login";
+const apiWorkItemUrl = apiAccessUrl + "/rpt/repository/workitem?fields=workitem";
+const apiQueryUrl = apiAccessUrl + "/oslc/queries";
+
+const almWorkItemUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemName/com.ibm.team.workitem.WorkItem"
+const almQueryUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemOid/com.ibm.team.workitem.query.QueryDescriptor";
 
 export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState}
-export type {apiWorkItem}
-export {apiAccessUrl, apiLoginUrl}
+export type {apiWorkItem, apiQuery}
+export {apiAccessUrl, apiLoginUrl, apiWorkItemUrl, apiQueryUrl, almWorkItemUrl, almQueryUrl}

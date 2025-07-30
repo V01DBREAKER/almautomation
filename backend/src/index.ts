@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const base_url = "https://rb-alm-14-p.de.bosch.com/ccm/rpt/repository";
+const base_url = "https://rb-alm-14-p.de.bosch.com/ccm";
 const login_url = "https://rb-alm-14-p.de.bosch.com/jts";
 
 // replace with tokens from DNG

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef} from 'react'
 import { getDescFromID } from '../almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
+import { getWorkItemDetails } from '../hooks/ParsingTools'
+import { almWorkItemUrl, type apiWorkItem } from '../almAPI/almTypes'
 
 interface TicketSearchProps {}
 
@@ -13,7 +15,15 @@ const TicketSearch: React.FC<TicketSearchProps> = (_:TicketSearchProps) => {
     const user = useAuth()!
 
     const search = () => {
-        getDescFromID(id, user.token).then(updateDescription);
+        getDescFromID(id, user.token).then(result=>{
+            const workItem:apiWorkItem = getWorkItemDetails(result)
+            if (!workItem.workItem) {
+                updateDescription(`Could not find workitem ${id}`);
+                return;
+            }
+            const description = `<a href="${almWorkItemUrl}/${workItem.workItem.id}">${workItem.workItem.id}</a><br/>${workItem.workItem.summary}<br/>${workItem.workItem.formattedDescription}`;
+            updateDescription(description);
+        });
     }
 
     useEffect(() => {
@@ -39,7 +49,7 @@ const TicketSearch: React.FC<TicketSearchProps> = (_:TicketSearchProps) => {
                 >Search</button>
             </div>
             <div className='flex-grow overflow-y-scroll rounded-lg h-[76%]'>
-                <span className="block bg-white h-full" ref={spanRef}></span>
+                <span className="block bg-white" ref={spanRef}></span>
             </div>
         </div>
     )

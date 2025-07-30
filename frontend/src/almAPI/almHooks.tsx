@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { apiAccessUrl } from './almTypes';
+import { apiWorkItemUrl, apiQueryUrl } from './almTypes';
 
-const getDescFromID = async (id: number, token: string):Promise<string> => {
+const requestAPI = async (url: string, token: string):Promise<string> => {
     try{
-        const url = `${apiAccessUrl}workitem?fields=workitem/workItem[id=${id}]/summary`
         const response = await axios.post(
         url, 
         null, 
@@ -19,8 +18,14 @@ const getDescFromID = async (id: number, token: string):Promise<string> => {
     }
 };
 
-const convertToDate = (dateString: string): Date => {
-    return new Date(dateString);
-}
+const getDescFromID = async (id: number, token: string):Promise<string> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|summary|formattedDescription)`;
+    return await requestAPI(url, token);
+};
 
-export { getDescFromID, convertToDate };
+const getIDsFromQuery = async (queryId: string, token: string):Promise<string> => {
+    const url = `${apiQueryUrl}/${queryId}/rtc_cm:results?oslc_cm.properties=dc:identifier`;
+    return await requestAPI(url, token);
+};
+
+export { getDescFromID, getIDsFromQuery };

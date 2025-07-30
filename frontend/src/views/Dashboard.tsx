@@ -1,12 +1,13 @@
 import React from "react"
 import TicketSearch from "../components/TicketSearch"
 import { useAuth } from "../hooks/AuthProvider"
+import QuerySearch from "../components/QuerySearch"
 
 const Dashboard: React.FC = ()  => {
   const user = useAuth()!
 
   const dashCellClass = `border-[0.3rem] border-senary rounded-xl p-[0.2rem] bg-secondary`;
-
+  
   return (
     <div className='fixed left-0 top-0 h-full w-full justify-center items-center p-[0.5rem] @container-[size]'>
       <div className={`flex bg-quaternary block h-[3rem] mb-[0.5rem] border-[0.3rem] border-senary rounded-lg items-center`}>
@@ -19,8 +20,10 @@ const Dashboard: React.FC = ()  => {
         </span>
         <span className={`${dashCellClass} row-span-1`}>cell2</span>
         <span className={`${dashCellClass} row-span-1`}>cell3</span>
-        <span className={`${dashCellClass} row-span-1`}>cell4</span>
-        <span className={`${dashCellClass} row-span-2`}>cell5, etc <br/> add more cells in code!</span>
+        <span className={`${dashCellClass} row-span-1`}>cell4, etc add more cells in code!</span>
+        <span className={`${dashCellClass} row-span-2`}>
+          <QuerySearch/>
+        </span>
       </div>
     </div>
   )
