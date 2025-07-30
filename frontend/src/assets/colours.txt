@@ -1,0 +1,6 @@
+    #977BD5 - Primary
+    #8C7EAA - Secondary
+    #9868FF - Teritary
+    #767180 - Quaternary
+    #453D55 - Quinary
+    #241C33 - Senary
