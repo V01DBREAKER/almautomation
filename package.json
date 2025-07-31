@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run --prefix frontend dev | npm run --prefix backend start",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
