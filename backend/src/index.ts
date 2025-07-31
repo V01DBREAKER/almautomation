@@ -6,7 +6,7 @@ import { Agent, fetch } from 'undici'; // axios wasnt working and request is dep
 import jwt from 'jsonwebtoken';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 const base_url = "https://rb-alm-14-p.de.bosch.com/ccm";
 const login_url = "https://rb-alm-14-p.de.bosch.com/jts";
 
@@ -16,17 +16,17 @@ const loginDatabase:Map<string, string> = new Map()
 
 // Load SSL certificates
 const certificates = {
-    key: fs.readFileSync('../secrets/server.key'), // Path to your private key
-    cert: fs.readFileSync('../secrets/server.cert'), // Path to your certificate
+    key: fs.readFileSync('./secrets/server.key'), // Path to your private key
+    cert: fs.readFileSync('./secrets/server.cert'), // Path to your certificate
 };
 
 const convertAuthBasic = (username:string, password: string) => 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
 
-const auth_secret = fs.readFileSync('../secrets/auth.key');
+const auth_secret = fs.readFileSync('./secrets/auth.key');
 
 // Enable CORS for frontend
 app.use(cors({
-    origin: 'http://localhost:5173', // Allow only React frontend origin
+    origin: 'http://localhost:5222', // Allow only React frontend origin
     credentials: true // Allow credentials to be included
 }));
 
@@ -120,6 +120,19 @@ app.use('/login', (req, res) => {
 
 // Create an HTTPS server using the SSL certificates
 const httpsServer = https.createServer(certificates, app);
-httpsServer.listen(PORT, () => {
-    console.log(`Proxy server running on https://localhost:${PORT}`);
-});
+const startServer = (port: number) => {
+    httpsServer.listen(port, () => {
+        console.log(`Proxy server running on https://localhost:${port}`);
+    }).on('error', (err) => {
+        if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+            console.log(`Port ${port} is in use. Trying port ${port + 1}...`);
+            startServer(port + 1); // Try the next port
+        } else {
+            console.error(err)
+        }
+    });
+};
+
+startServer(PORT)
+
+

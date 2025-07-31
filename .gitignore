@@ -25,3 +25,6 @@ dist-ssr
 
 # secrets
 secrets
+
+# electron installer
+electron_install
