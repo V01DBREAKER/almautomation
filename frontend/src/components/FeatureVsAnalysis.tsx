@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef} from 'react'
-import { getParentId, getSummaryAnalysis } from '../almAPI/almHooks'
+import { getParentId, getSummaryAnalysis, getFormattedDescription } from '../almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
-import { almWorkItemUrl, type almExtension, type apiWorkItem } from '../almAPI/almTypes'
 
 interface FeatureVsAnalysisProps {}
 
@@ -14,26 +13,18 @@ const FeatureVsAnalysis: React.FC<FeatureVsAnalysisProps> = (_:FeatureVsAnalysis
     const user = useAuth()!
 
     const search = () => {
-        const f =  async () => {
-            // const parentIdWI:apiWorkItem = getWorkItemDetails(await getParentId(id, user.token))
-            // if (!parentIdWI || !parentIdWI.workItem.parent.id) return; //raise error (no parent)
-            // const parentSAWI:apiWorkItem = getWorkItemDetails(await getSummaryAnalysis(parentIdWI.workItem.parent!.id, user.token))
-            // if (!parentSAWI.workItem.allExtensions.
-            // const feature = !largeStringValue
-            // console.log(feature)
-        }
-        f()
-
-        
-        // get(id, user.token).then(result=>{
-        //     const workItem:apiWorkItem = getWorkItemDetails(result)
-        //     if (!workItem || !workItem.workItem) {
-        //         updateDescription(`Could not find workitem ${id}`);
-        //         return;
-        //     }
-        //     const description = `<a href="${almWorkItemUrl}/${workItem.workItem.id}">${workItem.workItem.id}</a><br/>${workItem.workItem.summary}<br/>${workItem.workItem.formattedDescription}`;
-        //     updateDescription(description);
-        // });
+        // get ticket by id, get its parent, get summary analysis of both tickets. Check for hours.
+        (async ()=>{
+            const workItem = await getParentId(id, user.token)
+            if (workItem.id === -1) return `Ticket ${id} could not be found.`
+            if (workItem.parent === undefined) return `Parent of ticket ${id} could not be found.`
+            const analysisDesc = await getFormattedDescription(id, user.token)
+            const featDesc = await getSummaryAnalysis(workItem.parent.id, user.token)
+            // check for hours
+            return `Analysis Ticket ${id} promises the following:<br/>${analysisDesc.formattedDescription}<br/>Feature Ticket ${workItem.parent.id} promises the following:<br/>${featDesc.summaryAnalysis}`
+        })().then(res=>{
+            updateDescription(res)
+        })
     }
 
     useEffect(() => {

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { type apiResponse, apiWorkItemUrl, apiQueryUrl, type almWorkItem } from './almTypes';
+import { apiWorkItemUrl, apiQueryUrl } from './almTypes';
+import type {apiResponse, almWorkItem, almExtension}  from './almTypes';
 import { getWorkItemDetails, getQueryDetails } from '../hooks/ParsingTools'
 
 
@@ -52,24 +53,37 @@ const getIDsFromQuery = async (queryId: string, token: string):Promise<number[]>
     }
 };
 
-const getFormattedDescription = async (id: number, token: string):Promise<string> => {
-    const url = `${apiWorkItemUrl}/workItem[id=${id}]/formattedDescription`;
-    const res = await requestAPI(url, token);
-    return getWorkItemDetails(res.api).workItem?.formattedDescription ?? res.api;
+const getFormattedDescription = async (id: number, token: string):Promise<Pick<almWorkItem, "id" | "formattedDescription">> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|formattedDescription)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem!
+        return {id: workItem.id ?? -1, formattedDescription: workItem.formattedDescription ?? ""};
+    } catch {
+        return {id: -1, formattedDescription: ""};
+    };
 };
 
-const getParentId = async (id: number, token: string):Promise<number> => {
-    const url = `${apiWorkItemUrl}/workItem[id=${id}]/parent/id`;
-    const res = await requestAPI(url, token);
-    return getWorkItemDetails(res.api).workItem?.parent?.id ?? -1;
+const getParentId = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {parent?: Pick<almWorkItem, "id">}> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|parent/id)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem!
+        return {id: workItem.id ?? -1, parent: workItem.parent ?? undefined};
+    } catch {
+        return {id: -1, parent: undefined};
+    }
 };
 
-const getSummaryAnalysis = async (id: number, token: string):Promise<string> => {
-    const url = `${apiWorkItemUrl}/workItem[id=${id}]/allExtensions[key=com.bosch.ae.be.team.workitem.attribute.summary_analysis]/largeStringValue`;
-    const res = await requestAPI(url, token);
-    const extensions = getWorkItemDetails(res.api).workItem?.allExtensions
-    console.log(extensions)
-    return (extensions && extensions[0].largeStringValue) ?? "";
+const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {summaryAnalysis: almExtension["largeStringValue"]}> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.summary_analysis]/largeStringValue)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem!
+        return {id: workItem.id ?? -1, summaryAnalysis: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
+    } catch {
+        return {id: -1, summaryAnalysis: ""}
+    }
 };
 
 

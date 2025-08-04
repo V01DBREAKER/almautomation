@@ -20,7 +20,7 @@ type almWorkItem = {
     dueDate: Date;
     description: string;                // description of work item
     // workflowSurrogate: almWorkFlow;   
-    tags: string[];                     // tags of work item separated by |
+    tags: string[] | string;                     // tags of work item separated by |
     duration: number;                   // -1 for undefined
     timeSpent: number;                  // -1 for undefined
     correctedEstimate: number;          // -1 for undefined
@@ -29,8 +29,8 @@ type almWorkItem = {
     owner: almUser;
     category: almCategory;
     comments: almComment[];
-    customAttributes: almCustomAttr[];  // There are multiple custom attribute child tags
-    subscriptions: almUser[];           // There are multiple subscriptions child tags
+    customAttributes: almCustomAttr[] | almCustomAttr;  // There are multiple custom attribute child tags
+    subscriptions: almUser[] | almUser;           // There are multiple subscriptions child tags
     projectArea: almProject;
     resolver: almUser;
     target: almIteration;
@@ -39,7 +39,7 @@ type almWorkItem = {
     stateTransitions: [];
     // multiple types of extensions use allExtensions.type instead
     itemHistory: [];
-    auditableLinks: almAttachment[];
+    auditableLinks: almAttachment[] | almAttachment;
     teamArea: almTeamArea;
     dayModified: string;
     commentCount: number;
@@ -57,9 +57,9 @@ type almWorkItem = {
         id: string;
         name: string;
     };
-    parent: almWorkItem;
-    children: almWorkItem[];
-    allExtensions: almExtension[];
+    parent: almWorkItem | undefined;
+    children: almWorkItem[] | almWorkItem;
+    allExtensions: almExtension[] | almExtension;
     formattedSummary: string;
     formattedDescription: string;
     // <stringComplexity/>
@@ -101,7 +101,7 @@ type almCategory = {
     archived: boolean;
     readAccessEnabled: boolean;
     modifiedBy: string;
-    teamAreas: string[];
+    teamAreas: string[] | string;
     projectArea: string;
     defaultTeamArea: string;
     qualifiedName: string;
@@ -166,7 +166,7 @@ type almIteration = {
     hasDeliverable: boolean;
     modifiedBy: string;
     parent: string;
-    children: string[];
+    children: string[] | string;
     developmentLine: string;
     iterationType: string;
 };
