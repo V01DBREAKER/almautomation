@@ -60,11 +60,11 @@ const authenticateToken = (req: express.Request, res: express.Response, next: ex
     if (!token) return res.sendStatus(401); // No token, unauthorized
 
     jwt.verify(token, auth_secret, (err, user) => {
-        if (err) return res.sendStatus(403); // Token is no longer valid
+        if (err) return res.sendStatus(401); // Token is no longer valid
         if (typeof user !== 'string' && user?.username) {
             res.locals.user = user.username;
         } else {
-            return res.sendStatus(403); // Token is invalid or malformed
+            return res.sendStatus(401); // Token is invalid or malformed
         }
         next(); // Proceed to the next middleware or route handler
     });
@@ -75,13 +75,13 @@ app.use('/api', authenticateToken, (req, res) => {
     const url = base_url + req.url; 
     console.log(`Fetching: ${url}`)
     const auth = loginDatabase.get(res.locals.user);
-    if (auth === undefined) return res.status(403).send({ error: 'Token Invalid'});
+    if (auth === undefined) return res.status(401).send({ error: 'Token Invalid'});
     pollAPI(url, auth!).then(([api_status, api_body]) => {
         if (api_status === 200){
-            res.status(200).send(api_body); // Send XML response directly
+            res.status(200).send({user: res.locals.user, api: api_body}); // Send XML response directly
         } else {
-            console.error('Error during authentication:', api_body);
-            res.status(api_status).send({ error: 'Authentication failed' });
+            console.error('Error during fetch:', api_body);
+            res.status(api_status).send({ user: res.locals.user, error: 'Fetch error', api: api_body });
         }
     });
 });
