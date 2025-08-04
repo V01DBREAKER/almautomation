@@ -1,24 +1,46 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import type { loginCredentials } from '../almAPI/almAuth';
 import { useAuth } from '../hooks/AuthProvider';
-import { Navigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 
 const Login: React.FC = () => {
+  const [message, setMessage] = useState<string>("Please log in to continue.")
+  const [barColour, setBarColour] = useState<string>("lightcoral")
   const [credentials, setCredentials] = useState<loginCredentials>({
     username:'', password:''
   });
 
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const login = (e:React.FormEvent) => {
     e.preventDefault();
-    auth?.login(credentials)
+    auth?.login(credentials).then(result=>{
+      if (result==200) {
+        setMessage("Logging in...")
+        setBarColour("lightgreen")
+      } else {
+        setMessage("Please login again.") 
+        setBarColour("lightcoral")
+      }
+    })
   }
+
+  useEffect(()=>{
+    if (auth?.token !== ""){
+      auth?.validateLogin().then(result=>{
+        if (result) navigate("/")
+        else setMessage("Please login again.")
+      })
+    }
+  }, [])
+
+
+
   return (
-    auth?.token === "" ? (
     <div className='fixed left-0 top-0 h-full w-full place-content-center p-[0.5rem] @container-[size]'>
-      <div className="text-center place-self-center min-w-[300px]" style={{ backgroundColor: 'lightcoral', padding: '10px', marginBottom: '10px' }}>
-        Please log in to continue.
+      <div className="text-center place-self-center min-w-[300px]" style={{ backgroundColor: barColour, padding: '10px', marginBottom: '10px' }}>
+        {message}
       </div>
       <div style={{ maxWidth: '300px', margin: '0 auto', padding: '20px' }}>
         <form onSubmit={login}>
@@ -52,7 +74,7 @@ const Login: React.FC = () => {
         </form>
       </div>
     </div>
-  ) : <Navigate to="/" />);
+  )
 };
 
 export default Login;

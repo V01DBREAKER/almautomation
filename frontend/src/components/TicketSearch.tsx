@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef} from 'react'
-import { getDescFromID } from '../almAPI/almHooks'
+import { getOverviewFromID } from '../almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
-import { getWorkItemDetails } from '../hooks/ParsingTools'
-import { almWorkItemUrl, type apiWorkItem } from '../almAPI/almTypes'
+import { almWorkItemUrl } from '../almAPI/almTypes'
 
 interface TicketSearchProps {}
 
@@ -15,15 +14,14 @@ const TicketSearch: React.FC<TicketSearchProps> = (_:TicketSearchProps) => {
     const user = useAuth()!
 
     const search = () => {
-        getDescFromID(id, user.token).then(result=>{
-            const workItem:apiWorkItem = getWorkItemDetails(result)
-            if (!workItem.workItem) {
+        getOverviewFromID(id, user.token).then(res=>{
+            if (res.id === -1) {
                 updateDescription(`Could not find workitem ${id}`);
-                return;
+            } else {
+                const description = `<a href="${almWorkItemUrl}/${res.id}">${res.id}</a><br/>${res.formattedSummary}<br/>${res.formattedDescription}`;
+                updateDescription(description)
             }
-            const description = `<a href="${almWorkItemUrl}/${workItem.workItem.id}">${workItem.workItem.id}</a><br/>${workItem.workItem.summary}<br/>${workItem.workItem.formattedDescription}`;
-            updateDescription(description);
-        });
+        })
     }
 
     useEffect(() => {

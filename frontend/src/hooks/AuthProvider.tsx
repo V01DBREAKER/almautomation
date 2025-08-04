@@ -1,12 +1,13 @@
 import { useContext, createContext, useState } from "react";
-import apiLogin, { type loginCredentials } from "../almAPI/almAuth";
+import { apiLogin, apiTokenCheck, type loginCredentials } from "../almAPI/almAuth";
 import { useNavigate } from "react-router";
 interface AuthContextType {
   // Define the shape of your context value here
   user: string;
   token: string;
-  login: (credentials: loginCredentials) => void;
+  login: (credentials: loginCredentials) => Promise<number>;
   logout: () => void;
+  validateLogin: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,7 +31,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 localStorage.setItem("site", res.data.token)
                 console.log(`Logged in as ${credentials.username}`)
                 navigate("/dashboard")
+            } else if (res?.status == 401) {
+                navigate("/login")
             }
+            return res?.status ?? 404
         },
         logout: () => {
             setUser("")
@@ -39,6 +43,18 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.log("Logged out.")
             navigate("/login")
         },
+        validateLogin: async () => {
+          const res = await apiTokenCheck(token);
+          if (res?.status == 200) {
+                authValue.user = res?.data.user
+                return true
+            } else if (res?.status == 401) {
+                localStorage.removeItem("site");
+                return false
+            } else {
+              return false
+            }
+        }
     };
 
   return <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>;

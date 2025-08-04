@@ -1,12 +1,12 @@
-import { apiLoginUrl } from "./almTypes";
-import axios from "axios";
+import { apiLoginUrl, apiAccessUrl, type apiResponse } from "./almTypes";
+import axios, {type AxiosResponse} from "axios";
 
 type loginCredentials = {
     username: string,
     password: string
 }
 
-const apiLogin = async (credentials: loginCredentials) => {
+const apiLogin = async (credentials: loginCredentials):Promise<AxiosResponse | undefined> => {
     try {
         const response = await axios.post(
         apiLoginUrl, 
@@ -21,5 +21,21 @@ const apiLogin = async (credentials: loginCredentials) => {
     }
 };
 
-export default apiLogin;
+const apiTokenCheck = async (token:string):Promise<AxiosResponse | undefined> => {
+    try {
+        const response = await axios.post(
+        apiAccessUrl, 
+        null, 
+        {
+            headers: {
+            'Authorization': token
+            }
+        });
+        return response
+    } catch (error) {
+        console.error('Login failed:', error);
+    }
+}
+
+export {apiLogin, apiTokenCheck};
 export type { loginCredentials };

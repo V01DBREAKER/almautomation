@@ -1,3 +1,9 @@
+type apiResponse = {
+    user: string | undefined,
+    api: string,
+    error: string | undefined
+} 
+
 type almWorkItem = {
     id: number;
     uniqueId: string;
@@ -11,9 +17,9 @@ type almWorkItem = {
     resolutionDate: string;
     summary: string;                    // title/summary of work item
     creationDate: string;
-    dueDate: Date | null;
+    dueDate: Date;
     description: string;                // description of work item
-    // workflowSurrogate: almWorkFlow | null;   
+    // workflowSurrogate: almWorkFlow;   
     tags: string[];                     // tags of work item separated by |
     duration: number;                   // -1 for undefined
     timeSpent: number;                  // -1 for undefined
@@ -78,7 +84,7 @@ type almUser = {
     userId: string;
     name: string;
     archived: boolean;
-    modifiedBy: string | null;
+    modifiedBy: string;
 };
 
 type almCategory = {
@@ -90,14 +96,14 @@ type almCategory = {
     contextId: string;
     modified: string;
     name: string;
-    description: string | null;
+    description: string;
     id: string;
     archived: boolean;
     readAccessEnabled: boolean;
-    modifiedBy: string | null;
-    teamAreas: string[] | null;
-    projectArea: string | null;
-    defaultTeamArea: string | null;
+    modifiedBy: string;
+    teamAreas: string[];
+    projectArea: string;
+    defaultTeamArea: string;
     qualifiedName: string;
 };
 
@@ -121,8 +127,8 @@ type almCustomAttr = {
     identifier: string;
     attributeType: string;
     builtIn: boolean;
-    modifiedBy: string | null;
-    projectArea: string | null;
+    modifiedBy: string;
+    projectArea: string;
 };
 
 type almProject = {
@@ -158,11 +164,11 @@ type almIteration = {
     startDate: string;
     endDate: string;
     hasDeliverable: boolean;
-    modifiedBy: string | null;
-    parent: string | null;
-    children: string[] | null;
-    developmentLine: string | null;
-    iterationType: string | null;
+    modifiedBy: string;
+    parent: string;
+    children: string[];
+    developmentLine: string;
+    iterationType: string;
 };
 
 type almDeliverable = {
@@ -176,10 +182,10 @@ type almDeliverable = {
     name: string;
     description: string;
     archived: boolean;
-    creationDate: string | null;
-    modifiedBy: string | null;
-    projectArea: string | null;
-    artifact: string | null;
+    creationDate: string;
+    modifiedBy: string;
+    projectArea: string;
+    artifact: string;
 };
 
 type almAttachment = {
@@ -192,9 +198,9 @@ type almAttachment = {
     modified: string;
     name: string;
     archived: boolean;
-    modifiedBy: string | null;
-    sourceRef: string | null;
-    targetRef: string | null;
+    modifiedBy: string;
+    sourceRef: string;
+    targetRef: string;
 };
 
 type almTeamArea = {
@@ -207,32 +213,32 @@ type almTeamArea = {
     modified: string;
     archived: boolean;
     name: string;
-    modifiedBy: string | null;
+    modifiedBy: string;
 }
 
 type almState = {
     id: string;
     name: string;
-    workflow: almWorkFlow | null;
+    workflow: almWorkFlow;
 }
 
 type almWorkFlow = {};
 
 type almExtension = {
-    helperId: string | null;
+    helperId: string;
     key: string;
     type: string;
-    booleanValue: boolean | null;
-    integerValue: number | null;
-    longValue: number | null;
-    doubleValue: number | null;
-    smallStringValue: string | null;
+    booleanValue: boolean;
+    integerValue: number;
+    longValue: number;
+    doubleValue: number;
+    smallStringValue: string;
     displayName: string;
     displayValue: boolean;
-    mediumStringValue: string | null;
-    largeStringValue: string | null;
-    timestampValue: string | null;
-    decimalValue: number | null;
+    mediumStringValue: string;
+    largeStringValue: string;
+    timestampValue: string;
+    decimalValue: number;
 }
 
 type almQueryItem = {
@@ -257,6 +263,7 @@ const apiQueryUrl = apiAccessUrl + "/oslc/queries";
 const almWorkItemUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemName/com.ibm.team.workitem.WorkItem"
 const almQueryUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemOid/com.ibm.team.workitem.query.QueryDescriptor";
 
-export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState}
-export type {apiWorkItem, apiQuery}
+
+export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState, almExtension}
+export type {apiResponse, apiWorkItem, apiQuery}
 export {apiAccessUrl, apiLoginUrl, apiWorkItemUrl, apiQueryUrl, almWorkItemUrl, almQueryUrl}

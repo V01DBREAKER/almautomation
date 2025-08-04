@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef} from 'react'
 import { getIDsFromQuery } from '../almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
-import { getQueryDetails, xmlToJObj} from '../hooks/ParsingTools'
-import { almQueryUrl, type apiQuery } from '../almAPI/almTypes'
+import { almWorkItemUrl } from '../almAPI/almTypes'
 
 interface QuerySearchProps {}
 
@@ -15,18 +14,14 @@ const QuerySearch: React.FC<QuerySearchProps> = (_:QuerySearchProps) => {
     const user = useAuth()!
 
     const search = () => {
-        getIDsFromQuery(id, user.token).then(result=>{
-            const query:apiQuery = getQueryDetails(result)
-            console.log(query)
-            if (!query.oslc_cmChangeRequest) {
+        getIDsFromQuery(id, user.token).then(res=>{
+            if (res.length < 1) {
                 updateDescription(`Could not find query ${id}`);
-                return;
+            } else {
+                updateDescription(res.map(el=>`<a href="${almWorkItemUrl}/${el}">${el}</a>`).join('<br/>'));
             }
-            const description = query.oslc_cmChangeRequest.map(el=>el.dcidentifier.toString()).concat()
-            console.log(description)
-            updateDescription(description);
         });
-    }
+    };
 
     useEffect(() => {
         if (spanRef.current) {
