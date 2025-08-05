@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef} from 'react'
-import { getOverviewFromID } from '../almAPI/almHooks'
+import { getOverviewFromID } from '../hooks/almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
-import { almWorkItemUrl } from '../almAPI/almTypes'
+import { almWorkItemUrl } from '../hooks/almAPI/almTypes'
 
 interface TicketSearchProps {}
 

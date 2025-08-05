@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { apiWorkItemUrl, apiQueryUrl } from './almTypes';
 import type {apiResponse, almWorkItem, almExtension}  from './almTypes';
-import { getWorkItemDetails, getQueryDetails } from '../hooks/ParsingTools'
+import { getWorkItemDetails, getQueryDetails } from '../ParsingTools'
 
 
 const requestAPI = async (url: string, token: string):Promise<apiResponse> => {

@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import type { apiWorkItem, apiQuery } from "../almAPI/almTypes";
+import type { apiWorkItem, apiQuery } from "./almAPI/almTypes";
 
 const convertIsoStringToDate = (dateString: string): Date => {
     return new Date(dateString);

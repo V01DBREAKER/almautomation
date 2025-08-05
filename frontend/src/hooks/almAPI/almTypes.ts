@@ -266,4 +266,4 @@ const almQueryUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemOid/com.i
 
 export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState, almExtension}
 export type {apiResponse, apiWorkItem, apiQuery}
-export {apiAccessUrl, apiLoginUrl, apiWorkItemUrl, apiQueryUrl, almWorkItemUrl, almQueryUrl}
+export {apiAccessUrl, apiLoginUrl, apiWorkItemUrl, apiQueryUrl, almWorkItemUrl, almQueryUrl, apiBaseUrl}

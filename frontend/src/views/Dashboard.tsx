@@ -3,6 +3,7 @@ import TicketSearch from "../components/TicketSearch"
 import QuerySearch from "../components/QuerySearch"
 import FeatureVsAnalysis from "../components/FeatureVsAnalysis"
 import TopBar from "../components/TopBar"
+import LLMAnalysis from "../components/LLMAnalysis"
 
 const Dashboard: React.FC = ()  => {
   const dashCellClass = `border-[0.3rem] border-senary rounded-xl p-[0.2rem] bg-secondary`;
@@ -22,6 +23,7 @@ const Dashboard: React.FC = ()  => {
         <span className={`${dashCellClass} row-span-2`}>
           <QuerySearch/>
         </span>
+        <span className={`${dashCellClass} row-span-2 col-span-3`}><LLMAnalysis/></span>
       </div>
     </div>
   )

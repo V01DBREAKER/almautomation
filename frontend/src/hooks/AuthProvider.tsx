@@ -1,6 +1,7 @@
 import { useContext, createContext, useState } from "react";
-import { apiLogin, apiTokenCheck, type loginCredentials } from "../almAPI/almAuth";
+import { apiLogin, apiTokenCheck, type loginCredentials } from "./almAPI/almAuth";
 import { useNavigate } from "react-router";
+
 interface AuthContextType {
   // Define the shape of your context value here
   user: string;

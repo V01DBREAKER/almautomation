@@ -9,13 +9,15 @@
     "backend": "ts-node backend/src/index.ts",
     "electron": "tsc -p electron/tsconfig.json && electron electron/dist/main.js",
     "web": "concurrently \"npm run frontend\" \"npm run backend\"",
-    "start": "npm run web"
+    "start": "npm run web",
+    "ai-test": "node --env-file=secrets/.env ./test.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.11.0",
     "concurrently": "^9.2.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "fast-xml-parser": "^5.2.5",
     "fetch": "^1.1.0",

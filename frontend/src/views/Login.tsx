@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import type { loginCredentials } from '../almAPI/almAuth';
+import type { loginCredentials } from '../hooks/almAPI/almAuth';
 import { useAuth } from '../hooks/AuthProvider';
 import { Navigate, useNavigate } from 'react-router';
 

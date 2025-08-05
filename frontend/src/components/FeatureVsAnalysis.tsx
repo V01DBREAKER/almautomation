@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef} from 'react'
-import { getParentId, getSummaryAnalysis, getFormattedDescription } from '../almAPI/almHooks'
+import { getParentId, getSummaryAnalysis, getFormattedDescription } from '../hooks/almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
 
 interface FeatureVsAnalysisProps {}

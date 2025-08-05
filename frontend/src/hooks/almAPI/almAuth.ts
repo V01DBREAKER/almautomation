@@ -1,4 +1,4 @@
-import { apiLoginUrl, apiAccessUrl, type apiResponse } from "./almTypes";
+import { apiLoginUrl, apiAccessUrl } from "./almTypes";
 import axios, {type AxiosResponse} from "axios";
 
 type loginCredentials = {
