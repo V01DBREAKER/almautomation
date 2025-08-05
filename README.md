@@ -12,4 +12,7 @@ To run with servers only use `npm start` and open `localhost:5222`
 
 Runs with React/TS/Vite frontend at `localhost:5222`, Express/TS backend at `localhost:3001` and Electron for browser.
 
-Currently just sends your username and password for authentication to the alm api and is therefore not very secure.
+If using AI features, you will need to be using RB Local Proxy Manager and running PX through it to local proxy.\
+Get your LLM Farm key [here](https://inside-docupedia.bosch.com/confluence2/genaiplatform/llm-farm-372737736.html).
+
+Currently this program uses basic authentication, we plan to move to a better system in future.
