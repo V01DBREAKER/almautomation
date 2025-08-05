@@ -4,13 +4,9 @@
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
-    "all": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run electron\"",
-    "frontend": "vite frontend",
-    "backend": "ts-node backend/src/index.ts",
-    "electron": "tsc -p electron/tsconfig.json && electron electron/dist/main.js",
-    "web": "concurrently \"npm run frontend\" \"npm run backend\"",
-    "start": "npm run web",
-    "ai-test": "node --env-file=secrets/.env ./test.js"
+    "all": "concurrently \"bun run frontend\" \"bun run backend\"",
+    "frontend": "bunx --bun vite frontend",
+    "backend": "bun run backend/src/index.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
@@ -18,6 +14,7 @@
     "concurrently": "^9.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "electrobun": "^0.0.18",
     "express": "^5.1.0",
     "fast-xml-parser": "^5.2.5",
     "fetch": "^1.1.0",
@@ -38,12 +35,10 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
-    "electron": "^37.2.4",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
-    "ts-node": "^10.9.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.4"

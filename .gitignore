@@ -25,10 +25,7 @@ dist-ssr
 
 # secrets
 secrets
-.env
-
-# electron installer
-electron_install
+.env*
 
 # test scripts
 test.js
