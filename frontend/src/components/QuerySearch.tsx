@@ -2,6 +2,7 @@ import { useState, useEffect, useRef} from 'react'
 import { getIDsFromQuery } from '../hooks/almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
 import { almWorkItemUrl } from '../hooks/almAPI/almTypes'
+import { buttonStyle2, inputStyle1, outputStyle2, tabStyle1, titleStyle1 } from './ComponentStyles'
 
 interface QuerySearchProps {}
 
@@ -30,22 +31,22 @@ const QuerySearch: React.FC<QuerySearchProps> = (_:QuerySearchProps) => {
     }, [description])
 
     return (
-        <div className='flex-inline w-full h-full flex-col'>
-            <span className='flex justify-center h-[1.4rem] text-white w-full font-bold'>
+        <div className={tabStyle1}>
+            <span className={titleStyle1}>
                 List IDs from Query ID
             </span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem]'>
                 <input 
-                    className='bg-quaternary border-senary border-[0.2rem] rounded-lg text-white mr-2 col-span-3' 
+                    className={`${inputStyle1} col-span-3`}
                     type="search" placeholder="_FBmkkNTZEe7dNdAflPaDsQ" 
                     onChange={(e)=>{updateID(e.target.value)}}
                 />
                 <button
-                    className="bg-quaternary hover:bg-senary border-senary border-[0.2rem] text-white rounded-lg" 
+                    className={buttonStyle2}
                     onClick={search}
                 >Search</button>
             </div>
-            <div className='flex-grow overflow-y-scroll rounded-lg h-[76%]'>
+            <div className={`${outputStyle2} flex-grow`}>
                 <span className="block bg-white" ref={spanRef}></span>
             </div>
         </div>

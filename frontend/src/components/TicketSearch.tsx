@@ -2,6 +2,7 @@ import { useState, useEffect, useRef} from 'react'
 import { getOverviewFromID } from '../hooks/almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
 import { almWorkItemUrl } from '../hooks/almAPI/almTypes'
+import { buttonStyle2, inputStyle1, outputStyle1, tabStyle1, titleStyle1 } from './ComponentStyles'
 
 interface TicketSearchProps {}
 
@@ -31,22 +32,20 @@ const TicketSearch: React.FC<TicketSearchProps> = (_:TicketSearchProps) => {
     }, [description])
 
     return (
-        <div className='flex-inline w-full h-full flex-col'>
-            <span className='flex justify-center h-[1.4rem] text-white w-full font-bold'>
-                Work Item Search by ID
-            </span>
+        <div className={tabStyle1}>
+            <span className={titleStyle1}>Work Item Search by ID</span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem]'>
                 <input 
-                    className='bg-quaternary border-senary border-[0.2rem] rounded-lg text-white mr-2 col-span-3' 
+                    className={`${inputStyle1} col-span-3`} 
                     type="number" placeholder="101100" 
                     onChange={(e)=>{updateID(Number(e.target.value))}}
                 />
                 <button
-                    className="bg-quaternary hover:bg-senary border-senary border-[0.2rem] text-white rounded-lg" 
+                    className={buttonStyle2} 
                     onClick={search}
                 >Search</button>
             </div>
-            <div className='flex-grow overflow-y-scroll rounded-lg h-[76%]'>
+            <div className={`flex-grow ${outputStyle1}`}>
                 <span className="block bg-white" ref={spanRef}></span>
             </div>
         </div>

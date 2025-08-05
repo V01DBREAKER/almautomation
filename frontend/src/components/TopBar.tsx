@@ -1,11 +1,23 @@
 import { useAuth } from "../hooks/AuthProvider"
+import React, {type Dispatch} from "react"
+import type { dashboardTab } from "../views/Dashboard"
+import { buttonStyle1 } from "./ComponentStyles"
 
-const TopBar: React.FC = () => {
-const user = useAuth()!
+interface TopBarProps {
+    setTab: Dispatch<React.SetStateAction<number>>
+    tabs: dashboardTab[]
+}
+const TopBar: React.FC<TopBarProps> = (props:TopBarProps) => {
+    const user = useAuth()!
     return (
-        <div className={`flex bg-quaternary block h-[3rem] mb-[0.5rem] border-[0.3rem] border-senary rounded-lg items-center`}>
-        <span className="absolute left-[2rem] text-white text-[2rem]">ALM Automation</span>
-        <button className="absolute right-[1rem] h-[2rem] bg-primary hover:bg-teritary rounded-lg border-teritary border-[0.2rem] p-[0.1rem]" onClick={user.logout}>Logout</button>
+        <div className={`flex w-full bg-quaternary block h-[3rem] mb-[0.5rem] border-[0.3rem] border-senary rounded-lg items-center`}>
+            <span className="inline-block text-white text-[2rem] ml-[0.2rem] mr-[1rem] font-[consolas]">ALM Automation</span>
+            <div>
+            {props.tabs.map(({element:_, name}, i)=>{
+                return (<button className={`${buttonStyle1} mr-[0.1rem] w-[8rem]`} onClick={()=>props.setTab(i)}>{name}</button>)
+            })}
+            </div>
+            <button className={`absolute right-[1rem] ${buttonStyle1}`} onClick={user.logout}>Logout</button>
         </div>
     )
 }
