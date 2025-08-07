@@ -106,6 +106,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
+// note: replace these with your source code install paths
 Source: "C:\Users\LEA6CL\Documents\ALMAutomation\ALMAutomation.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\LEA6CL\Documents\OpenSSL-1.1.1h_win32\*"; DestDir: "{tmp}\openssl"; Flags: ignoreversion recursesubdirs
 
