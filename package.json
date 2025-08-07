@@ -6,8 +6,10 @@
   "scripts": {
     "all": "concurrently \"bun run frontend\" \"bun run backend\"",
     "frontend": "bunx --bun vite frontend",
+    "build-frontend": "bunx --bun vite build frontend",
     "backend": "bun run backend/src/server.ts 5222 false",
-    "build-run": "bunx --bun vite build frontend && bun run backend/src/server.ts"
+    "build-run": "bun run build-frontend && bun run backend/src/server.ts",
+    "compile": "bun run build-frontend && bun build --compile backend/src/server.ts --outfile ALMAutomation"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",

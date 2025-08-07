@@ -29,7 +29,7 @@ const requestLLM = async (url:string, context:string, prompt:string):Promise<[nu
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
-            'genaiplatform-farm-subscription-key': process.env.API_KEY
+            'genaiplatform-farm-subscription-key': process.env.LLM_API_KEY
             },
             body: JSON.stringify({
             messages: [

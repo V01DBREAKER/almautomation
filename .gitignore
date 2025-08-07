@@ -24,9 +24,13 @@ dist-ssr
 *.sw?
 
 # secrets
-secrets
+secrets/*
 .env*
 
 # test scripts
 test.js
 test_scripts
+
+# build/installer generated files
+ALMAutomation.exe
+Output
