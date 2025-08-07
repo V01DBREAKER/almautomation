@@ -10,9 +10,9 @@ const requestALM = async (url: string, auth: string): Promise<[number, string]> 
                 'Authorization': auth,
             },
             // Use undici's fetch with custom agent
-            dispatcher: new Agent({
-                connect: { rejectUnauthorized: false } // Ignore self-signed certificate
-            })
+            // dispatcher: new Agent({
+            //     connect: { rejectUnauthorized: false } // Ignore self-signed certificate
+            // })
         });
 
         const responseBody = await response.text(); // Fetch response body as text

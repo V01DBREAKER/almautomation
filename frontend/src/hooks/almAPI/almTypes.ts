@@ -254,8 +254,8 @@ interface apiQuery {
     oslc_cmChangeRequest: [Partial<almQueryItem>]
 }
 
-const apiBaseUrl = "https://localhost:3001";
-const apiAccessUrl = apiBaseUrl + "/api";
+const apiBaseUrl = "http://localhost:3001/api";
+const apiAccessUrl = apiBaseUrl + "/alm";
 const apiLoginUrl = apiBaseUrl + "/login";
 const apiWorkItemUrl = apiAccessUrl + "/rpt/repository/workitem?fields=workitem";
 const apiQueryUrl = apiAccessUrl + "/oslc/queries";

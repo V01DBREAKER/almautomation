@@ -11,5 +11,6 @@ export default defineConfig({
   server: {
     port: 5222,
   },
-  envDir: "../secrets"
+  envDir: "../secrets",
+  base:"./"
 })

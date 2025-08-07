@@ -6,7 +6,8 @@
   "scripts": {
     "all": "concurrently \"bun run frontend\" \"bun run backend\"",
     "frontend": "bunx --bun vite frontend",
-    "backend": "bun run backend/src/index.ts"
+    "backend": "bun run backend/src/index.ts",
+    "build-run": "bunx --bun vite build frontend && bun run backend/src/server.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
