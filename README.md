@@ -7,8 +7,7 @@ Generate secrets in `./secrets` using `openssl req -nodes -new -x509 -keyout ./s
 Get an API key for the LLM farm and add it to `secrets/.env` under `API_KEY=your_api_key`
 Generate a third key for user auth `openssl req -nodes -new -x509 -keyout ./secrets/auth.key`
 
-To run with GUI use `npm run all`
-To run with servers only use `npm start` and open `localhost:5222`
+To run use `bun run all` and open `localhost:5222`
 
 Runs with React/TS/Vite frontend at `localhost:5222`, Express/TS backend at `localhost:3001` and Electron for browser.
 
