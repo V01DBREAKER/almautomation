@@ -45,17 +45,21 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             navigate("/login")
         },
         validateLogin: async () => {
+          const lastValid = Number(localStorage.getItem("lastValidated"));
+          if (Date.now() - lastValid < 30000) return true;
           const res = await apiTokenCheck(token);
           if (res?.status == 200) {
-                authValue.user = res?.data.user
+                authValue.user = res?.data.user;
+                localStorage.setItem("lastValidated", Date.now().toString());
                 return true
             } else if (res?.status == 401) {
+              localStorage.setItem("lastValidated", "0");
                 localStorage.removeItem("site");
                 return false
             } else {
               return false
             }
-        }
+        },
     };
 
   return <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>;

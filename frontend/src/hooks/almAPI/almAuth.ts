@@ -24,7 +24,7 @@ const apiLogin = async (credentials: loginCredentials):Promise<AxiosResponse | u
 const apiTokenCheck = async (token:string):Promise<AxiosResponse | undefined> => {
     try {
         const response = await axios.post(
-        apiAccessUrl, 
+        apiAccessUrl + "/rpt", 
         null, 
         {
             headers: {

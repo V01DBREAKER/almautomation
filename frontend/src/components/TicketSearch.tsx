@@ -2,7 +2,7 @@ import { useState, useEffect, useRef} from 'react'
 import { getOverviewFromID } from '../hooks/almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
 import { almWorkItemUrl } from '../hooks/almAPI/almTypes'
-import { buttonStyle2, inputStyle1, outputStyle1, tabStyle1, titleStyle1 } from './ComponentStyles'
+import { buttonStyle2, inputStyle1, outputStyle2, tabStyle1, titleStyle1 } from './ComponentStyles'
 
 interface TicketSearchProps {}
 
@@ -32,7 +32,7 @@ const TicketSearch: React.FC<TicketSearchProps> = (_:TicketSearchProps) => {
     }, [description])
 
     return (
-        <div className={tabStyle1}>
+        <div className={`overflow-y-auto ${tabStyle1}`}>
             <span className={titleStyle1}>Work Item Search by ID</span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem]'>
                 <input 
@@ -45,8 +45,8 @@ const TicketSearch: React.FC<TicketSearchProps> = (_:TicketSearchProps) => {
                     onClick={search}
                 >Search</button>
             </div>
-            <div className={`flex-grow ${outputStyle1}`}>
-                <span className="block bg-white" ref={spanRef}></span>
+            <div className={`flex-grow ${outputStyle2}`} >
+                <span ref={spanRef}/> 
             </div>
         </div>
     )

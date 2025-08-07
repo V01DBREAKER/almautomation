@@ -17,7 +17,7 @@ const Dashboard: React.FC = ()  => {
   return (
     <div className='flex flex-col w-[100vw] h-[100vh] justify-center items-center p-[0.5rem] @container-[size]'>
       <TopBar setTab={setTab} tabs={dashboardTabs}/>
-      <div className={`flex flex-grow w-full ${dashCellClass} `}>
+      <div className={`flex flex-grow w-full overflow-y-auto ${dashCellClass} `}>
         {dashboardTabs[tab].element}
       </div>
     </div>

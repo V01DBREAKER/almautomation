@@ -2,10 +2,9 @@ import fs from 'node:fs';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 
-import { serve } from "bun";
+import { serve, BunRequest } from "bun";
 import { requestALM, requestLLM, convertAuthBasic } from './apiFunctions';
 import index from "../../frontend/dist/index.html";
-
 
 // move to config (EXTERNAL)
 const alm_base_url = "https://rb-alm-14-p.de.bosch.com/ccm";
@@ -18,12 +17,16 @@ dotenv.config({path: 'secrets/.env'})
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 
 const PORT = Number(process.env.PORT) || 3001;
+const FRONTEND_PORT = Number(process.argv[2]) || PORT;
+const HOST_FRONTEND = !(process.argv[3]==="false");
+
 
 // replace with tokens from DNG
 // temp login database token:Buffer.from(`${username}:${password}`).toString('base64')
 const loginDatabase:Map<string, string> = new Map()
 
 type protoResponse = {
+    path: string;
     status: number;
     headers: Headers;
     body: BodyInit;
@@ -32,15 +35,15 @@ type protoResponse = {
     }>
 }
 
-type MiddleWare = (req: Request, pass: protoResponse) => Response | void;
-type RouteHandler = (req: Request, pass: protoResponse) => Response;
-type AsyncRouteHandler = (req: Request, pass: protoResponse) => Promise<Response>;
+type MiddleWare = (req: BunRequest, pass: protoResponse) => Response | void;
+type RouteHandler = (req: BunRequest, pass: protoResponse) => Response;
+type AsyncRouteHandler = (req: BunRequest, pass: protoResponse) => Promise<Response>;
 type chainableFunctions = [...MiddleWare[], RouteHandler|AsyncRouteHandler];
 
 class functionChain {
   constructor(public functionStack: chainableFunctions) {}
 
-  run = async(req: Request, pass:protoResponse) => {
+  run = async(req: BunRequest, pass:protoResponse) => {
     const next = (index:number)=>{
       if (this.functionStack.length-1 > index){
         const nextFunction = this.functionStack[index]
@@ -61,24 +64,25 @@ class functionChain {
 const createResponse = (status:number, headers: Headers, body: object) => 
   new Response(JSON.stringify(body), {headers:headers, status:status});
 
+const corsPrefight = (req: BunRequest) => {
+  const header = new Headers();
+  header.set("Access-Control-Allow-Origin", `http://localhost:${FRONTEND_PORT}`);
+  header.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  header.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  header.set("Access-Control-Allow-Credentials", "true");
+  return new Response(null, {
+    status: 204,
+    headers: header
+  })
+}
 
 // Enable CORS for frontend
 const corsMiddleware:MiddleWare = (req, pass) => {
-  const responseHeaders = new Headers();
-  responseHeaders.set("Access-Control-Allow-Origin", `http://localhost:${PORT}`);
-  responseHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  responseHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  responseHeaders.set("Access-Control-Allow-Credentials", "true");
-
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: responseHeaders,
-    });
-  }
-
-  pass.headers = responseHeaders;
+  pass.headers.set("Access-Control-Allow-Origin", `http://localhost:${FRONTEND_PORT}`);
+  pass.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  pass.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  pass.headers.set("Access-Control-Allow-Credentials", "true");
+  pass.headers = pass.headers;
 };
 
 const authenticateToken:MiddleWare = (req, pass) => {
@@ -119,10 +123,10 @@ const loginRoute:AsyncRouteHandler = async (req, pass) => {
 }
 
 const almRoute:AsyncRouteHandler = async (req, pass) => {
-    const url = alm_base_url + req.url; 
+    const url = alm_base_url + pass.path
     console.log(`Fetching: ${url}`)
     const auth = loginDatabase.get(pass.locals.user!);
-    if (auth === undefined) return new Promise((res)=>createResponse(401, pass.headers, {error: "Token invalid."}))
+    if (auth === undefined) return new Promise(()=>createResponse(401, pass.headers, {error: "Token invalid."}))
     return requestALM(url, auth!).then(([api_status, api_body]) => {
         if (api_status === 200){
           return createResponse(200, pass.headers, {user: pass.locals.user, api: api_body})
@@ -136,11 +140,11 @@ const almRoute:AsyncRouteHandler = async (req, pass) => {
 }
 
 const aiRoute:AsyncRouteHandler = async (req, pass) =>{
-  const url = llm_url + req.url;
+  const url = llm_url + pass.path;
   const { context, prompt } = await req.json()
   console.log(`Fetching: ${url}`)
   const auth = loginDatabase.get(pass.locals.user!);
-  if (auth === undefined) return new Promise((res)=>createResponse(401, pass.headers, {error: "Token invalid."}))
+  if (auth === undefined) return new Promise(()=>createResponse(401, pass.headers, {error: "Token invalid."}))
   return requestLLM(url, context, prompt).then(([api_status, api_body]) => {
     if (api_status === 200){
       return createResponse(200, pass.headers, {user: pass.locals.user, api: api_body}); // Send XML response directly
@@ -151,31 +155,41 @@ const aiRoute:AsyncRouteHandler = async (req, pass) =>{
   });
 }
 
-
-// https://bun.com/docs/api/http#bun-serve
-// https://bun.com/docs/bundler/executables
+const getPath = (url:string, route: string): string => {
+  const base_url = `http://localhost:${PORT}`;
+  return url.slice((base_url+route).length+1)
+}
 
 // Start the server
 const server = serve({
   routes: {
-    "/api/alm": {
+    "/api/alm/*": {
       POST: (req)=>
         (new functionChain([corsMiddleware, authenticateToken, almRoute]))
-        .run(req, {status: 404, headers:new Headers(), body: "", locals: {}})
-      },
+        .run(req, {status: 404, headers:new Headers(), body: "", locals: {}, path: getPath(req.url, "/api/alm")})
+    },
     "/api/login": {
       POST: (req)=>
         (new functionChain([corsMiddleware, loginRoute]))
-        .run(req, {status: 404, headers:new Headers(), body: "", locals: {}})
-      },
+        .run(req, {status: 404, headers:new Headers(), body: "", locals: {}, path: getPath(req.url, "/api/login")})
+    },
     "/api/ai": {
       POST: (req)=>
         (new functionChain([corsMiddleware, authenticateToken, aiRoute]))
-        .run(req, {status: 404, headers:new Headers(), body: "", locals: {}})
-      },
-    "/*": index,
+        .run(req, {status: 404, headers:new Headers(), body: "", locals: {}, path: getPath(req.url, "/api/ai")})
+    },
+    "/api/*": {
+      OPTIONS: (req) => corsPrefight(req)
+    },
+     "/*": HOST_FRONTEND ? index : {
+      GET: (req) => new Response(`Error 404: You'll need to build the frontend or if running the frontend separately go to http://localhost:${FRONTEND_PORT}`, {status: 404})
+     },
     },
   port: PORT,
+  tls: {
+    key: Bun.file('secrets/server.key'),
+    cert: Bun.file('secrets/server.cert')
+  }
 });
 
 console.log(`Server running at http://localhost:${server.port}`);
