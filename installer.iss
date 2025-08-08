@@ -22,6 +22,7 @@ SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+UsePreviousAppDir=no  
 
 [Code]
 var
