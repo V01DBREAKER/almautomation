@@ -9,7 +9,7 @@
     "build-frontend": "bunx --bun vite build frontend",
     "backend": "bun run backend/src/server.ts 5222 false",
     "build-run": "bun run build-frontend && bun run backend/src/server.ts",
-    "compile": "bun run build-frontend && bun build --compile backend/src/server.ts --outfile ALMAutomation"
+    "compile": "bun run build-frontend && bun build --compile backend/src/server.ts --outfile ALMAutomation --windows-icon=icon.ico --minify"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",

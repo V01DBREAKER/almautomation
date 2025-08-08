@@ -17,7 +17,8 @@ DefaultGroupName=ALMAutomation
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
-OutputBaseFilename=mysetup
+OutputBaseFilename=ALMAutomationInstaller
+SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
