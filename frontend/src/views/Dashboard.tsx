@@ -4,6 +4,7 @@ import QuerySearch from "../components/QuerySearch"
 import FeatureVsAnalysis from "../components/FeatureVsAnalysis"
 import TopBar from "../components/TopBar"
 import LLMAnalysis from "../components/LLMAnalysis"
+import ProblemTicketAnalysis from "../components/ProblemTicketAnalysis"
 
 export interface dashboardTab {
   element: ReactElement
@@ -25,10 +26,8 @@ const Dashboard: React.FC = ()  => {
 }
 
 const dashboardTabs: dashboardTab[] = [
-  {element: <LLMAnalysis/>, name: "AI Analysis"},
-  {element: <TicketSearch/>, name: "Ticket By ID"},
-  {element: <FeatureVsAnalysis/>, name: "Compare Tickets"},
-  {element: <QuerySearch/>, name: "Query ID list"}
+  {element: <FeatureVsAnalysis/>, name: "Analyse Effort Estimations"},
+  {element: <ProblemTicketAnalysis/>, name: "Problem Ticket Analysis"}
 ]
 
 export default Dashboard

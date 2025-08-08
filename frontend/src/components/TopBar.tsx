@@ -1,7 +1,7 @@
 import { useAuth } from "../hooks/AuthProvider"
 import React, {type Dispatch} from "react"
 import type { dashboardTab } from "../views/Dashboard"
-import { buttonStyle1 } from "./ComponentStyles"
+import { tabButtonStyle1 } from "./ComponentStyles"
 
 interface TopBarProps {
     setTab: Dispatch<React.SetStateAction<number>>
@@ -14,10 +14,10 @@ const TopBar: React.FC<TopBarProps> = (props:TopBarProps) => {
             <span className="inline-block text-white text-[2rem] ml-[0.2rem] mr-[1rem] font-[consolas]">ALM Automation</span>
             <div>
             {props.tabs.map(({element:_, name}, i)=>{
-                return (<button className={`${buttonStyle1} mr-[0.1rem] w-[8rem]`} onClick={()=>props.setTab(i)}>{name}</button>)
+                return (<button className={`${tabButtonStyle1} mr-[0.1rem] w-[8rem] text-[1rem]/[1rem]`} onClick={()=>props.setTab(i)}>{name}</button>)
             })}
             </div>
-            <button className={`absolute right-[1rem] ${buttonStyle1}`} onClick={user.logout}>Logout</button>
+            <button className={`absolute right-[1rem] ${tabButtonStyle1}`} onClick={user.logout}>Logout</button>
         </div>
     )
 }

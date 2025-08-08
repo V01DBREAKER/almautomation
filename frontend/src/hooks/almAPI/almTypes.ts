@@ -234,7 +234,7 @@ type almExtension = {
     doubleValue: number;
     smallStringValue: string;
     displayName: string;
-    displayValue: boolean;
+    displayValue: string;
     mediumStringValue: string;
     largeStringValue: string;
     timestampValue: string;
@@ -254,6 +254,8 @@ interface apiQuery {
     oslc_cmChangeRequest: [Partial<almQueryItem>]
 }
 
+const almTypeIds = {problem: "com.bosch.rtc.configuration.workitemtype.type.problem"};
+
 const apiBaseUrl = "https://localhost:3001/api";
 const apiAccessUrl = apiBaseUrl + "/alm";
 const apiLoginUrl = apiBaseUrl + "/login";
@@ -265,5 +267,6 @@ const almQueryUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemOid/com.i
 
 
 export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState, almExtension}
+export {almTypeIds}
 export type {apiResponse, apiWorkItem, apiQuery}
 export {apiAccessUrl, apiLoginUrl, apiWorkItemUrl, apiQueryUrl, almWorkItemUrl, almQueryUrl, apiBaseUrl}

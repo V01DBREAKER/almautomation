@@ -75,6 +75,17 @@ const getParentId = async (id: number, token: string):Promise<Pick<almWorkItem, 
     }
 };
 
+const getType = async (id:number, token:string):Promise<Pick<almWorkItem, "id" | "type">> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|type)`;
+        try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem!
+        return {id: workItem.id ?? -1, type: workItem.type ?? {id: "type not found", name: "type not found"}};
+    } catch (error) {
+        return {id: -1, type: {id: String(error), name: String(error)}};
+    }
+}
+
 const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {summaryAnalysis: almExtension["largeStringValue"]}> => {
     const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.summary_analysis]/largeStringValue)`;
     try {
@@ -86,5 +97,16 @@ const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWor
     }
 };
 
+const getProblemAnalysisSummary = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {defectDescription: almExtension["largeStringValue"]}> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem!
+        return {id: workItem.id ?? -1, defectDescription: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
+    } catch {
+        return {id: -1, defectDescription: ""}
+    }
+};
 
-export { getOverviewFromID, getIDsFromQuery, getFormattedDescription, getParentId, getSummaryAnalysis };
+
+export { getOverviewFromID, getIDsFromQuery, getFormattedDescription, getParentId, getSummaryAnalysis, getType, getProblemAnalysisSummary };

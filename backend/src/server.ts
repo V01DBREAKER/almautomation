@@ -147,7 +147,7 @@ const aiRoute:AsyncRouteHandler = async (req, pass) =>{
   if (auth === undefined) return new Promise(()=>createResponse(401, pass.headers, {error: "Token invalid."}))
   return requestLLM(url, context, prompt).then(([api_status, api_body]) => {
     if (api_status === 200){
-      return createResponse(200, pass.headers, {user: pass.locals.user, api: api_body}); // Send XML response directly
+      return createResponse(200, pass.headers, {user: pass.locals.user, api: api_body}); // Send JSON response directly
     } else {
       console.error('Error during fetch:', api_body);
       return createResponse(api_status, pass.headers, { user: pass.locals.user, error: 'Fetch error', api: api_body })
@@ -173,7 +173,7 @@ const server = serve({
         (new functionChain([corsMiddleware, loginRoute]))
         .run(req, {status: 404, headers:new Headers(), body: "", locals: {}, path: getPath(req.url, "/api/login")})
     },
-    "/api/ai": {
+    "/api/ai/*": {
       POST: (req)=>
         (new functionChain([corsMiddleware, authenticateToken, aiRoute]))
         .run(req, {status: 404, headers:new Headers(), body: "", locals: {}, path: getPath(req.url, "/api/ai")})
