@@ -10,7 +10,7 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = (props:TopBarProps) => {
     const user = useAuth()!
     return (
-        <div className={`flex w-full bg-quaternary block h-[3rem] mb-[0.5rem] border-[0.3rem] border-senary rounded-lg items-center`}>
+        <div className={`flex w-full bg-AAquaternary block h-[3rem] mb-[0.5rem] border-[0.3rem] border-AAsenary rounded-lg items-center`}>
             <span className="inline-block text-white text-[2rem] ml-[0.2rem] mr-[1rem] font-[consolas]">ALM Automation</span>
             <div>
             {props.tabs.map(({element:_, name}, i)=>{

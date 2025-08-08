@@ -4,12 +4,12 @@
 @custom-variant @lgy (@container (min-height: 50rem));
 
 @theme {
-    --color-primary: #977BD5;
-    --color-secondary: #8C7EAA;
-    --color-teritary: #9868FF;
-    --color-quaternary: #767180;
-    --color-quinary: #453D55;
-    --color-senary: #241C33;
+    --color-AAprimary: #977BD5;
+    --color-AAsecondary: #8C7EAA;
+    --color-AAteritary: #9868FF;
+    --color-AAquaternary: #767180;
+    --color-AAquinary: #453D55;
+    --color-AAsenary: #241C33;
 }
 
 @theme inline {
