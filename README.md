@@ -9,8 +9,9 @@ To run AI features you'll need an LLM farm key and RB Local Proxy Manager
 
 ### Install and Run:
 1. Download the installer from releases and run it, provide the API key you recieved from Bosch.
-2. Then open the server url on your web browser, typically `https://localhost:3001` 
-3. If using AI features, run RB Local Proxy Manager and click execute on Px status\
+2. Run ALMAutomation.exe, it should open a terminal (and stay open)
+3. Then open the server url on your web browser, typically `https://localhost:3001` 
+4. If using AI features, run RB Local Proxy Manager and click execute on Px status\
    ![alt text](docs/{C7171871-3A5D-4C91-8695-29395872F200}.png) \
    ![alt text](docs/image.png)\
    Make sure the port is `3128`!
