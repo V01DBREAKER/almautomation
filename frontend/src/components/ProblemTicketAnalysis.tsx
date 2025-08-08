@@ -16,15 +16,28 @@ interface ProblemTicketAnalysisProps {}
 //    Create a bar graph of all ticket ratings
 //    Extend bar graph to display specific headers
 
+type ProblemAnalysisSummaryResults = {
+     "Root Cause": number,
+     "Dependencies": number, 
+     "Corrective Actions": number, 
+     "Impacts": number,
+     "Recommendations": number, 
+     "Reason for delay of analysis": number, 
+     "Effort Estimate Summary": number,
+}
+
 const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTicketAnalysisProps) => {
-    const [id, updateQueryId] = useState<string>("");
+    const [query, updateQueryId] = useState<string>("");
     const [chat, updateChat] = useState<string>("");
-    const context = "You are a senior System Design Engineer.";
-    const promptStart= `Here is the ticket template:
-                        \`\`\`${almProblemAnalysisSummaryTemplate} \`\`\`
-                        Given the below ticket, how well has the author filled and addressed the template headers?
-                        Give each header a score between 0 to 10 and return this score as json at the start of your response with the following format:
-                        {"Header_name":score,"header2_name":score,"header3_name":score} where score is an integer
+    const context = `You are a senior System Design Engineer scoring problem analysis summaries based on the problem work item template and any additional prompts by the user.
+                     This is the problem analysis summary template:
+                     \`\`\`
+                     ${almProblemAnalysisSummaryTemplate}
+                     \`\`\`
+                     Give each header a score between 0 to 1 and return this score as json at the start of your response with the following format:
+                     {"Header_name":score,"header2_name":score,"header3_name":score} where score is an floating point number between 0 and 1.
+                     Ensure that your response is pure JSON. Do not include chatter. If your response is not a pure JSON, the system will crash.`;
+    const promptStart= `Given the below ticket, how well has the author filled and addressed the template headers? 
                         Ticket:
                         \`\`\``;
     const promptEnd = "\n```";
@@ -33,33 +46,35 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
 
     const user = useAuth()!
 
+    const analyseTicket = async (id: number) => {
+        const ticket = await getProblemAnalysisSummary(id, user.token)
+        const json = (await askChat4omini(context, promptStart + ticket.defectDescription + promptEnd, user.token)).choices[0].message.content
+        return JSON.parse(json)
+    } 
+
     const search = () => {
-        // (async ()=>{
-        //     // filter only Problem ticket Ids
-        //     const ticketIds = await getIDsFromQuery(id, user.token)
-        //     const filteredTicketIds = ticketIds.filter(async id=>{
-        //         const ticket_type = await getType(id, user.token)
-        //         if (ticket_type.id === -1) return false
-        //         return almTypeIds.problem === ticket_type.type.id
-        //     })
-        //     // apply AI to each id
-        //     const results = filteredTicketIds.map(async id=>{
-        //         const ticket = await getProblemAnalysisSummary(id, user.token)
-        //         return (await askChat4omini(context, promptStart + ticket.defectDescription + promptEnd, user.token)).choices[0].message.content
-        //     })
-        //     // summarise results
-        //     return results.join('<br/>')
-        // })
-        const id = 980320;
-        (async ()=>{
-            const ticket = await getProblemAnalysisSummary(id, user.token)
-            return (await askChat4omini(context, promptStart + ticket.defectDescription + promptEnd, user.token)).choices[0].message.content
-        })().then(res=>{
-            console.log(res)
-            updateChat(res)
-        })
-
-
+        if (!Number.isNaN(Number(query))) {
+            const ticketId = Number(query)
+            analyseTicket(ticketId).then(res=>{
+                updateChat(res)
+            })
+        } else {
+            (async ()=>{
+                // filter only Problem ticket Ids
+                const ticketIds = await getIDsFromQuery(query, user.token)
+                const filteredTicketIds = ticketIds.filter(async id=>{
+                    const ticket_type = await getType(id, user.token)
+                    if (ticket_type.id === -1) return false
+                    return almTypeIds.problem === ticket_type.type.id
+                })
+                // apply AI to each id
+                const results = filteredTicketIds.map(async id=>{
+                    return {id: id, results: await analyseTicket(id)}
+                })
+                // summarise results
+                return results.join('<br/>')
+            })
+        }
     }
 
     useEffect(() => {
@@ -76,7 +91,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                 <input 
                     className={`${inputStyle1} col-span-3`}
                     type="search" placeholder="Query ID" 
-                    onChange={(e)=>{updateQueryId(e.target.value)}}
+                    onChange={(e)=>{updateQueryId(e.target.value.trim())}}
                 />
                 <button
                     className={buttonStyle2}
