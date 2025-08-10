@@ -72,34 +72,34 @@ begin
     Result :=True
 end;
 
-procedure CurStepChanged(CurStep: TSetupStep);
-var
-  OpenSSLPath: string;
-  Command: string;
-  Command2: string;  
-  ResultCode: Integer;
-begin
-  if CurStep = ssPostInstall then
-  begin
-    // Run OpenSSL to generate SSH keys
-    OpenSSLPath := ExpandConstant('{tmp}\openssl\openssl.exe');
-    Command := ExpandConstant('req -nodes -new -x509 -keyout "{app}\secrets\server.key" -out "{app}\secrets\server.cert" -days 365 -subj "/C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=bosch.com"');
-    Command2 := ExpandConstant('req -nodes -new -x509 -keyout "{app}\secrets\auth.key" -subj "/C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=bosch.com"');
-    
-    // Execute OpenSSL commands
-    if not Exec(OpenSSLPath, Command, ExpandConstant('{tmp}\openssl\'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-    begin
-      MsgBox('Failed to generate server key and certificate.', mbError, MB_OK);
-      Exit;
-    end;
-    
-    if not Exec(OpenSSLPath, Command2, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-    begin
-      MsgBox('Failed to generate auth key.', mbError, MB_OK);
-      Exit;
-    end
-  end;
-end;
+//procedure CurStepChanged(CurStep: TSetupStep);
+// var
+//  OpenSSLPath: string;
+//  Command: string;
+//  Command2: string;  
+//  ResultCode: Integer;
+//begin
+//  if CurStep = ssPostInstall then
+//  begin
+//    // Run OpenSSL to generate SSH keys
+//    OpenSSLPath := ExpandConstant('{tmp}\openssl\openssl.exe');
+//    Command := ExpandConstant('req -nodes -new -x509 -keyout "{app}\secrets\server.key" -out "{app}\secrets\server.cert" -days 365 -subj "/C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"');
+//    Command2 := ExpandConstant('req -nodes -new -x509 -keyout "{app}\secrets\auth.key" -subj "/C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"');
+//    
+//    // Execute OpenSSL commands
+//    if not Exec(OpenSSLPath, Command, ExpandConstant('{tmp}\openssl\'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+//    begin
+//      MsgBox('Failed to generate server key and certificate.', mbError, MB_OK);
+//      Exit;
+//    end;
+//    
+//    if not Exec(OpenSSLPath, Command2, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+//    begin
+//      MsgBox('Failed to generate auth key.', mbError, MB_OK);
+//      Exit;
+//    end
+//  end;
+//end;
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -110,8 +110,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 // note: replace these with your source code install paths
 Source: "C:\Users\LEA6CL\Documents\ALMAutomation\ALMAutomation.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\LEA6CL\Documents\ALMAutomation\README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
-Source: "C:\Users\LEA6CL\Documents\OpenSSL-1.1.1h_win32\*"; DestDir: "{tmp}\openssl"; Flags: ignoreversion recursesubdirs
+Source: "C:\Users\LEA6CL\Documents\ALMAutomation\README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
+Source: "C:\Users\LEA6CL\Documents\OpenSSL-1.1.1h_win32\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs deleteafterinstall
 
 [Icons]
 Name: "{group}\ALMAutomation"; Filename: "{app}\ALMAutomation.exe"
@@ -119,4 +119,7 @@ Name: "{autodesktop}\ALMAutomation"; Filename: "{app}\ALMAutomation.exe"; Tasks:
 
 [Run]
 Filename: "{app}\ALMAutomation.exe"; Description: "{cm:LaunchProgram,ALMAutomation}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\openssl.exe"; Parameters: "req -nodes -new -x509 -keyout ./secrets/server.key -out ./secrets/server.cert -days 365 -subj /C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"; WorkingDir: "{app}"; StatusMsg: "Installing SSL Certs..."
+Filename: "{app}\openssl.exe"; Parameters: "req -nodes -new -x509 -keyout ./secrets/auth.key -subj /C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"; WorkingDir: "{app}"; StatusMsg: "Installing JWT Token..."
+
 
