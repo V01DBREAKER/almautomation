@@ -12,13 +12,15 @@ const alm_base_url = "https://rb-alm-14-p.de.bosch.com/ccm";
 const alm_login_url = "https://rb-alm-14-p.de.bosch.com/jts";
 const llm_url = "https://aoai-farm.bosch-temp.com/api/openai/deployments";
 
-let auth_secret: Buffer;
+let auth_key: Buffer;
+let auth_cert: Buffer;
 await(async ()=>{
-  const authKeyPath = 'secrets/auth.key';
+  const authKeyPath = 'secrets';
   if (!fs.existsSync(authKeyPath)) {
     await generateSecrets();
   }
-  auth_secret = fs.readFileSync(authKeyPath);
+  auth_key = fs.readFileSync(authKeyPath + '/auth.key');
+  auth_cert = fs.readFileSync(authKeyPath + '/auth.cert')
 })()
 
 dotenv.config({path: 'secrets/.env'})
@@ -100,7 +102,7 @@ const authenticateToken:MiddleWare = (req, pass) => {
         return createResponse(401, pass.headers, {error: "No token, unauthorized"})
     };
 
-    jwt.verify(token, auth_secret, (err, user) => {
+    jwt.verify(token, auth_cert, (err, user) => {
         if (err) return createResponse(401, pass.headers, {error:"Token is no longer valid"});
         if (typeof user !== 'string' && user?.username) {
             pass.locals.user = user.username;
@@ -117,7 +119,7 @@ const loginRoute:AsyncRouteHandler = async (req, pass) => {
   try {
       if (api_status === 200){
           console.log(`User: ${data.username} logged in.`);
-          const token = jwt.sign({username: data.username}, auth_secret, { expiresIn: '8h' });
+          const token = jwt.sign({username: data.username}, auth_key, { algorithm: 'RS256', expiresIn: '8h' });
           loginDatabase.set(data.username, basicAuth)
           return createResponse(200, pass.headers, {token: token});
       } else {
