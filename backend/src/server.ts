@@ -16,7 +16,7 @@ let auth_key: Buffer;
 let auth_cert: Buffer;
 await(async ()=>{
   const authKeyPath = 'secrets';
-  if (!fs.existsSync(authKeyPath + '/server.key')) {
+  if (!fs.existsSync(authKeyPath + '/server.key') || !fs.existsSync(authKeyPath + '/server.cert') || !fs.existsSync(authKeyPath + '/auth.key') || !fs.existsSync(authKeyPath + '/auth.cert')) {
     await generateSecrets();
   }
   auth_key = fs.readFileSync(authKeyPath + '/auth.key');
