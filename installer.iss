@@ -83,7 +83,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 // note: replace these with your source code install paths
 Source: "C:\Users\LEA6CL\Documents\ALMAutomation\ALMAutomation.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\LEA6CL\Documents\ALMAutomation\README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
-Source: "C:\Users\LEA6CL\Documents\OpenSSL-1.1.1h_win32\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs deleteafterinstall
+Source: "C:\Users\LEA6CL\Documents\ALMAutomation\docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\ALMAutomation"; Filename: "{app}\ALMAutomation.exe"
