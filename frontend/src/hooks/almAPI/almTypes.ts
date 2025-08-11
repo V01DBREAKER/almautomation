@@ -250,6 +250,10 @@ interface apiWorkItem {
     workItem: Partial<almWorkItem>
 }
 
+interface apiWorkItems {
+    workItem: Partial<almWorkItem>[]
+}
+
 interface apiQuery {
     oslc_cmChangeRequest: [Partial<almQueryItem>]
 }
@@ -268,5 +272,5 @@ const almQueryUrl = "https://rb-alm-14-p.de.bosch.com/ccm/resource/itemOid/com.i
 
 export type {almWorkItem, almUser, almCategory, almComment, almCustomAttr, almProject, almIteration, almDeliverable, almAttachment, almTeamArea, almState, almExtension}
 export {almTypeIds}
-export type {apiResponse, apiWorkItem, apiQuery}
+export type {apiResponse, apiWorkItem, apiQuery, apiWorkItems}
 export {apiAccessUrl, apiLoginUrl, apiWorkItemUrl, apiQueryUrl, almWorkItemUrl, almQueryUrl, apiBaseUrl}

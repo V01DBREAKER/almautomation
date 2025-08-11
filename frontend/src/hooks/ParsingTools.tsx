@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import type { apiWorkItem, apiQuery } from "./almAPI/almTypes";
+import type { apiWorkItem, apiWorkItems, apiQuery } from "./almAPI/almTypes";
 
 const convertIsoStringToDate = (dateString: string): Date => {
     return new Date(dateString);
@@ -16,10 +16,15 @@ const getWorkItemDetails = (xml: string):apiWorkItem => {
     return jObj
 }
 
+const getWorkItemsDetails = (xml: string):apiWorkItems => {
+    const jObj: apiWorkItems = xmlToJObj(xml).workitem
+    return jObj
+}
+
 const getQueryDetails = (xml:string):apiQuery => {
     const colonless = xml.replace(/:/g, '')
     const jObj: apiQuery = xmlToJObj(colonless).oslc_cmCollection
     return jObj
 }
 
-export { convertIsoStringToDate, getWorkItemDetails, getQueryDetails, xmlToJObj }
+export { convertIsoStringToDate, getWorkItemDetails, getWorkItemsDetails, getQueryDetails, xmlToJObj }

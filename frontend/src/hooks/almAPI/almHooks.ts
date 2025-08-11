@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { apiWorkItemUrl, apiQueryUrl } from './almTypes';
 import type {apiResponse, almWorkItem, almExtension}  from './almTypes';
-import { getWorkItemDetails, getQueryDetails } from '../ParsingTools'
+import { getWorkItemDetails, getWorkItemsDetails, getQueryDetails } from '../ParsingTools'
 
 
 const requestAPI = async (url: string, token: string):Promise<apiResponse> => {
@@ -43,6 +43,36 @@ const getOverviewFromID = async (id: number, token: string): Promise<Pick<almWor
     };
 };
 
+const getFormattedSummary = async (id: number, token: string): Promise<Pick<almWorkItem, "id" | "formattedSummary">> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|formattedSummary)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem;
+        return {
+            id: workItem.id ?? -1,
+            formattedSummary: workItem.formattedSummary ?? "",
+        };
+    } catch {
+        return {id: -1, formattedSummary: ""};
+    };
+};
+
+const getManyFormattedSummary = async (ids: number[], token: string): Promise<Pick<almWorkItem, "id" | "formattedSummary">[]> => {
+    const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '')
+    const url = `${apiWorkItemUrl}/workItem[${idSection.slice(0, -4)}]/(id|formattedSummary)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItems = getWorkItemsDetails(res.api).workItem
+        const result = workItems.map(workItem=>({
+            id: workItem.id ?? -1,
+            formattedSummary: workItem.formattedSummary ?? "",
+        }))
+        return result
+    } catch {
+        return [{id: -1, formattedSummary: ""}];
+    };
+};
+
 const getIDsFromQuery = async (queryId: string, token: string):Promise<number[]> => {
     const url = `${apiQueryUrl}/${queryId}/rtc_cm:results?oslc_cm.properties=dc:identifier`;
     try {
@@ -76,8 +106,8 @@ const getParentId = async (id: number, token: string):Promise<Pick<almWorkItem, 
 };
 
 const getType = async (id:number, token:string):Promise<Pick<almWorkItem, "id" | "type">> => {
-    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|type)`;
-        try {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|type/*)`;
+    try {
         const res = await requestAPI(url, token);
         const workItem = getWorkItemDetails(res.api).workItem!
         return {id: workItem.id ?? -1, type: workItem.type ?? {id: "type not found", name: "type not found"}};
@@ -85,6 +115,20 @@ const getType = async (id:number, token:string):Promise<Pick<almWorkItem, "id" |
         return {id: -1, type: {id: String(error), name: String(error)}};
     }
 }
+
+const getManyType = async (ids:number[], token:string):Promise<Pick<almWorkItem, "id" | "type">[]> => {
+    const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
+    const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|type/*)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItems = getWorkItemsDetails(res.api).workItem;
+        const results = workItems.map(workItem=>({id: workItem.id ?? -1, type: workItem.type ?? {id: "type not found", name: "type not found"}}));
+        return results;
+    } catch (error) {
+        return [{id: -1, type: {id: String(error), name: String(error)}}];
+    }
+}
+
 
 const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {summaryAnalysis: almExtension["largeStringValue"]}> => {
     const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.summary_analysis]/largeStringValue)`;
@@ -97,16 +141,30 @@ const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWor
     }
 };
 
-const getProblemAnalysisSummary = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {defectDescription: almExtension["largeStringValue"]}> => {
+const getProblemAnalysisSummary = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {description: almExtension["largeStringValue"]}> => {
     const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
     try {
         const res = await requestAPI(url, token);
         const workItem = getWorkItemDetails(res.api).workItem!
-        return {id: workItem.id ?? -1, defectDescription: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
+        return {id: workItem.id ?? -1, description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
     } catch {
-        return {id: -1, defectDescription: ""}
+        return {id: -1, description: ""}
+    }
+};
+
+const getManyProblemTicket = async (ids: number[], token: string):Promise<(Pick<almWorkItem, "id" | "formattedSummary"> & {description: almExtension["largeStringValue"]})[]> => {
+    const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
+    const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|formattedSummary|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItems = getWorkItemsDetails(res.api).workItem
+        const result = workItems.map(workItem =>
+            ({id: workItem.id ?? -1, formattedSummary: workItem.formattedSummary ?? "", description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}))
+        return result
+    } catch {
+        return [{id: -1, formattedSummary: "", description: ""}]
     }
 };
 
 
-export { getOverviewFromID, getIDsFromQuery, getFormattedDescription, getParentId, getSummaryAnalysis, getType, getProblemAnalysisSummary };
+export { getOverviewFromID, getIDsFromQuery, getFormattedSummary, getFormattedDescription, getParentId, getSummaryAnalysis, getType, getManyType, getProblemAnalysisSummary, getManyProblemTicket };
