@@ -67,40 +67,11 @@ begin
     ConfigContent := Format('LLM_API_KEY=%s', [APIKey]);
     SaveStringToFile(ConfigFile, ConfigContent, false);
     SaveStringToFile(ConfigFile, #13#10+'PORT=3000', True);
-
     end;
 
-    Result :=True
+    Result := True
 end;
 
-//procedure CurStepChanged(CurStep: TSetupStep);
-// var
-//  OpenSSLPath: string;
-//  Command: string;
-//  Command2: string;  
-//  ResultCode: Integer;
-//begin
-//  if CurStep = ssPostInstall then
-//  begin
-//    // Run OpenSSL to generate SSH keys
-//    OpenSSLPath := ExpandConstant('{tmp}\openssl\openssl.exe');
-//    Command := ExpandConstant('req -nodes -new -x509 -keyout "{app}\secrets\server.key" -out "{app}\secrets\server.cert" -days 365 -subj "/C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"');
-//    Command2 := ExpandConstant('req -nodes -new -x509 -keyout "{app}\secrets\auth.key" -subj "/C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"');
-//    
-//    // Execute OpenSSL commands
-//    if not Exec(OpenSSLPath, Command, ExpandConstant('{tmp}\openssl\'), SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-//    begin
-//      MsgBox('Failed to generate server key and certificate.', mbError, MB_OK);
-//      Exit;
-//    end;
-//    
-//    if not Exec(OpenSSLPath, Command2, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-//    begin
-//      MsgBox('Failed to generate auth key.', mbError, MB_OK);
-//      Exit;
-//    end
-//  end;
-//end;
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -120,7 +91,5 @@ Name: "{autodesktop}\ALMAutomation"; Filename: "{app}\ALMAutomation.exe"; Tasks:
 
 [Run]
 Filename: "{app}\ALMAutomation.exe"; Description: "{cm:LaunchProgram,ALMAutomation}"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\openssl.exe"; Parameters: "req -nodes -new -x509 -keyout ./secrets/server.key -out ./secrets/server.cert -days 365 -subj /C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"; WorkingDir: "{app}"; StatusMsg: "Installing SSL Certs..."
-Filename: "{app}\openssl.exe"; Parameters: "req -nodes -new -x509 -keyout ./secrets/auth.key -subj /C=AU/ST=VIC/L=Clayton/O=RBAU/OU=XC-CE/CN=au.bosch.com"; WorkingDir: "{app}"; StatusMsg: "Installing JWT Token..."
 
 

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 
 import { serve, BunRequest } from "bun";
 import { requestALM, requestLLM, convertAuthBasic } from './apiFunctions';
+import { generateSecrets } from './keyGen';
 import index from "../../frontend/dist/index.html";
 
 // move to config (EXTERNAL)
@@ -11,7 +12,14 @@ const alm_base_url = "https://rb-alm-14-p.de.bosch.com/ccm";
 const alm_login_url = "https://rb-alm-14-p.de.bosch.com/jts";
 const llm_url = "https://aoai-farm.bosch-temp.com/api/openai/deployments";
 
-const auth_secret = fs.readFileSync('./secrets/auth.key');
+let auth_secret: Buffer;
+await(async ()=>{
+  const authKeyPath = 'secrets/auth.key';
+  if (!fs.existsSync(authKeyPath)) {
+    await generateSecrets();
+  }
+  auth_secret = fs.readFileSync(authKeyPath);
+})()
 
 dotenv.config({path: 'secrets/.env'})
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
