@@ -163,5 +163,48 @@ const getManyProblemTicket = async (ids: number[], token: string):Promise<(Pick<
     }
 };
 
+type effortEstimationWorkItemChild = Pick<almWorkItem, "id" | "formattedSummary" | "formattedDescription">
+const getEffortEstimationFields = async (id: number, token: string):Promise<Pick<almWorkItem, "id" | "formattedSummary">  & {children: undefined | effortEstimationWorkItemChild | effortEstimationWorkItemChild[], summaryAnalysis: almExtension["largeStringValue"]}> => {
+    const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|formattedSummary|children/(id|formattedSummary|formattedDescription)|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.summary_analysis]/largeStringValue)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItem = getWorkItemDetails(res.api).workItem!
+        return {
+            id: workItem.id ?? -1, 
+            formattedSummary: workItem.formattedSummary ?? "", 
+            children: workItem.children as effortEstimationWorkItemChild, 
+            summaryAnalysis: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""
+        }
+    } catch {
+        throw `Error in fetching effort estimation fields of ${id}`
+    }
 
-export { getOverviewFromID, getIDsFromQuery, getFormattedSummary, getFormattedDescription, getParentId, getSummaryAnalysis, getType, getManyType, getProblemAnalysisSummary, getManyProblemTicket };
+
+}
+
+const getManyEffortEstimationFields = async (ids: number[], token: string):Promise<(Pick<almWorkItem, "id" | "formattedSummary"> & {children: undefined | effortEstimationWorkItemChild | effortEstimationWorkItemChild[], summaryAnalysis: almExtension["largeStringValue"]})[]> => {
+    if (ids.length === 1){
+        return [await getEffortEstimationFields(ids[0], token)]
+    } else {
+        const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
+        const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|formattedSummary|children/(id|formattedSummary|formattedDescription)|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.summary_analysis]/largeStringValue)`;
+    try {
+        const res = await requestAPI(url, token);
+        const workItems = getWorkItemsDetails(res.api).workItem!
+        const result = workItems.map(workItem =>(
+            {
+                id: workItem.id ?? -1, 
+                formattedSummary: workItem.formattedSummary ?? "", 
+                children: workItem.children as effortEstimationWorkItemChild, 
+                summaryAnalysis: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""
+            })
+        );
+        return result;
+    } catch {
+        throw `Error in fetching effort estimation fields of ${ids}`
+    }
+    }
+};
+
+
+export { getOverviewFromID, getIDsFromQuery, getFormattedSummary, getFormattedDescription, getParentId, getSummaryAnalysis, getType, getManyType, getProblemAnalysisSummary, getManyProblemTicket, getManyEffortEstimationFields };

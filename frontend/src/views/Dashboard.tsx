@@ -1,8 +1,9 @@
 import React, { useState, type ReactElement } from "react"
-import FeatureVsAnalysis from "../components/FeatureVsAnalysis"
+import FeatureVsAnalysis from "../components/EffortEstimationAnalysis"
 import TopBar from "../components/TopBar"
 import ProblemTicketAnalysis from "../components/ProblemTicketAnalysis"
 import LLMAnalysis from "@/components/LLMAnalysis"
+import EffortEstimationAnalysis from "../components/EffortEstimationAnalysis"
 
 export interface dashboardTab {
   element: ReactElement
@@ -27,7 +28,7 @@ const Dashboard: React.FC = ()  => {
 
 const dashboardTabs: dashboardTab[] = [
   {element: <ProblemTicketAnalysis/>, name: "Problem Ticket Analysis"},
-  {element: <FeatureVsAnalysis/>, name: "Analyse Effort Estimations"},
+  {element: <EffortEstimationAnalysis/>, name: "Analyse Effort Estimations"},
   {element: <LLMAnalysis/>, name: "Chat to AI"},
 ]
 
