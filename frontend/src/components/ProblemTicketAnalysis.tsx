@@ -8,6 +8,7 @@ import { almProblemAnalysisSummaryTemplate } from '../hooks/almAPI/almTemplates'
 import FixedBarChart from './FixedBarChart';
 import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead, TableFooter,  } from './ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 
 interface ProblemTicketAnalysisProps {}
 
@@ -152,9 +153,9 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                             <TableBody>
                                 {results.map(result=>(
                                     <TableRow>
-                                        <TableCell><a href={`${almWorkItemUrl}/${result.id}`}>{result.id}</a></TableCell>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild><TableCell>{result.average}</TableCell></TooltipTrigger>
+                                        <TableCell className='align-top'><a href={`${almWorkItemUrl}/${result.id}`}>{result.id}</a></TableCell>
+                                        <Tooltip delayDuration={1000}>
+                                            <TooltipTrigger asChild><TableCell className='align-top'>{result.average}</TableCell></TooltipTrigger>
                                             <TooltipContent><Table>
                                                 <TableBody>{result.headers.map((k, i)=>(<TableRow>
                                                     <TableCell>{k}</TableCell>
@@ -163,10 +164,14 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                                                 <TableFooter><TableRow><TableCell>Average</TableCell><TableCell>{result.average}</TableCell></TableRow></TableFooter>
                                             </Table></TooltipContent>
                                         </Tooltip>
-                                        <Tooltip delayDuration={1500}>
-                                            <TooltipTrigger asChild><TableCell><span dangerouslySetInnerHTML={{__html: result.summary}}/></TableCell></TooltipTrigger>
-                                            <TooltipContent><span dangerouslySetInnerHTML={{ __html: result.description }}/></TooltipContent>
-                                        </Tooltip>
+                                        <TableCell>
+                                            <Accordion type="single" collapsible>
+                                                <AccordionItem value='item-1'>
+                                                    <AccordionTrigger className='p-0'><span dangerouslySetInnerHTML={{__html: result.summary}}/></AccordionTrigger>
+                                                    <AccordionContent><span dangerouslySetInnerHTML={{ __html: result.description }}/></AccordionContent>
+                                                </AccordionItem>
+                                            </Accordion>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
