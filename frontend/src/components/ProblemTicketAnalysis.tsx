@@ -123,7 +123,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
     return ( 
         <div className={tabStyle1}>
             <span className={titleStyle1}>
-                Enter a query Id containing problem tickets for the AI to analyse.
+                Enter a query Id containing problem tickets for the AI to analyse.<br/>Note: the scoring by AI is fake for now, to save on tokens.
             </span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem] gap-[0.2rem]'>
                 <input 
@@ -136,7 +136,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                     onClick={search}
                 >Analyse Tickets</button>
             </div>
-            <span className={`${outputStyle2} flex-grow`} ref={chatRef}>
+            <span className={`${outputStyle2} flex flex-grow`} ref={chatRef}>
                 {results ? 
                     (results.length > 1 ?
                         <Table>
