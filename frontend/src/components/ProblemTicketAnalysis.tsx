@@ -40,9 +40,14 @@ type analysisResult = {
     average: number
 }
 
+type searchResults = {
+    analysis: analysisResult[]
+    total: number
+}
+
 const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTicketAnalysisProps) => {
     const [query, updateQueryId] = useState<string>("");
-    const [results, setResults] = useState<undefined | analysisResult[]>()
+    const [results, setResults] = useState<undefined | searchResults>()
     const [chat, updateChat] = useState<string>("");
     const context = `You are a senior System Design Engineer scoring problem analysis summaries based on the problem work item template and any additional prompts by the user.
                      This is the problem analysis summary template:
@@ -65,12 +70,12 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
     const chatRef = useRef(null)
     const user = useAuth()!
 
-    const analyseTicket = async (id: number, summary:string, description: string): Promise<ProblemAnalysisSummaryResults> => {
+    const analyseTicket = async (summary:string, description: string): Promise<ProblemAnalysisSummaryResults> => {
         const json = (await askChat4omini(context, promptStart + summary + promptMiddle + description + promptEnd, user.token)).choices[0].message.content
         return JSON.parse(json)
     } 
 
-    const mockAnalyseTicket = async (id: number, summary: string, description: string): Promise<ProblemAnalysisSummaryResults> => {
+    const mockAnalyseTicket = async (summary: string, description: string): Promise<ProblemAnalysisSummaryResults> => {
         return {
             'Root Cause': Math.random(),
             Dependencies: Math.random(),
@@ -88,20 +93,27 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
         (async ()=>{
             // filter only Problem ticket Ids
             const ticketIds = !Number.isNaN(Number(query)) ? [Number(query)] : await getIDsFromQuery(query, user.token)
+            updateChat(`Found tickets...`);
+            const analyser = ticketIds.length <= 5 ? analyseTicket : mockAnalyseTicket
             const ticketTypes = await getManyType(ticketIds, user.token)
+            updateChat(`Filtering non-problem type tickets...`);
             const filteredTicketIds = ticketTypes.filter(ticket=>almTypeIds.problem === ticket.type.id).map(ticket=>ticket.id)
             // get ticket problem summaries
+            updateChat(`Getting ticket details...`);
             const problemTickets = await getManyProblemTicket(filteredTicketIds, user.token)
             // apply AI to each id
+            updateChat(`Applying AI...`);
             const response = problemTickets.map(async ticket=>
-                ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.problemAnalysisSummary, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.problemAnalysisSummary)}))
+                ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.problemAnalysisSummary, response: await analyser(ticket.formattedSummary, ticket.problemAnalysisSummary)}))
             // Wait for all promises to resolve
-            return Promise.all(response)
-        })().then(results=>{
+            return {results: await Promise.all(response), totalTickets: ticketIds.length}
+        })().then((searchResult)=>{
+            const {results, totalTickets} = searchResult
+            updateChat(`Filtering tickets for scores under 0.5 on any header`);
             const filteredResults = results.filter(ticket=>
                 Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=threshold ? true : acc, false)
             )
-            const fullResults = filteredResults.map(ticket=>{
+            const ticketResults = filteredResults.map(ticket=>{
                 const keys = Object.keys(ticket.response)
                 return {
                     id: ticket.id,
@@ -112,7 +124,8 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                     average: Math.round(keys.reduce((acc, k)=>acc+ticket.response[k], 0)/keys.length*100)/100
                 }
             })
-            setResults(fullResults)
+            const finalResults = {analysis: ticketResults, total: totalTickets} as searchResults
+            setResults(finalResults)
         }).catch(err=>{
             console.error(err)
             setResults(undefined)
@@ -123,7 +136,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
     return ( 
         <div className={tabStyle1}>
             <span className={titleStyle1}>
-                Enter a query Id containing problem tickets for the AI to analyse.<br/>Note: the scoring by AI is fake for now, to save on tokens.
+                Enter a query Id containing problem tickets for the AI to analyse.<br/>Note: the scoring by AI is fake if the query has more than 5 tickets, to save on tokens.
             </span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem] gap-[0.2rem]'>
                 <input 
@@ -136,13 +149,18 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                     onClick={search}
                 >Analyse Tickets</button>
             </div>
-            <span className={`${outputStyle2} flex flex-grow`} ref={chatRef}>
+            <span className={`${outputStyle2} flex flex-grow flex-col`} ref={chatRef}>
                 {results ? 
-                    (results.length > 1 ?
+                    (results.analysis.length > 1 ? <div className='flex flex-grow flex-col'>
+                        <div className='w-full grid grid-cols-3'>
+                            <span className='flex text-left'>Results for &nbsp;<code className='bg-gray-100'>{query}</code></span>
+                            <span className='text-center'>Hover over score and click id or summary for ticket details.</span>
+                            <span className='text-right'><i>{results.analysis.length}</i>&nbsp;out of&nbsp;<i>{results.total}</i>&nbsp;found to have a header with score under&nbsp;<b>0.5</b></span>
+                        </div>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>ID</TableHead>
+                                    <TableHead className='text-center'>ID</TableHead>
                                     <Tooltip>
                                         <TooltipTrigger asChild><TableHead>Score</TableHead></TooltipTrigger>
                                         <TooltipContent><span>Average score of all headers for this ticket. If any header is below 0.5, the ticket will appear on this list.</span></TooltipContent>
@@ -151,9 +169,11 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {results.map(result=>(
+                                {results.analysis.map(result=>(
                                     <TableRow>
-                                        <TableCell className='align-top'><a href={`${almWorkItemUrl}/${result.id}`}>{result.id}</a></TableCell>
+                                        <TableCell className='align-top'>
+                                            <a href={`${almWorkItemUrl}/${result.id}`} target='_blank' className='block w-full h-full hover:outline-black hover:outline-[0.1rem] rounded-md text-center'>{result.id}</a>
+                                        </TableCell>
                                         <Tooltip delayDuration={1000}>
                                             <TooltipTrigger asChild><TableCell className='align-top'>{result.average}</TableCell></TooltipTrigger>
                                             <TooltipContent><Table>
@@ -176,10 +196,10 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                                 ))}
                             </TableBody>
                         </Table>
-                    : <>
-                        <h3 dangerouslySetInnerHTML={{__html:results![0].summary}}/><br/>
-                        <FixedBarChart data={results![0].headers.map((name, i)=>({name, value: results![0].scores[i]}))}/>
-                        <span dangerouslySetInnerHTML={{__html:results![0].description}}/>
+                    </div>: <>
+                        <h3 dangerouslySetInnerHTML={{__html:results!.analysis[0].summary}}/><br/>
+                        <FixedBarChart data={results!.analysis[0].headers.map((name, i)=>({name, value: results!.analysis[0].scores[i]}))}/>
+                        <span dangerouslySetInnerHTML={{__html:results!.analysis[0].description}}/>
                     </>) : chat}
             </span>
         </div>

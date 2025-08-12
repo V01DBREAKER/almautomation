@@ -53,8 +53,9 @@ const EffortEstimationAnalysis: React.FC<EffortEstimationAnalysisProps> = (_:Eff
             })
             return results
         })().then(tickets=>{
+            // run each ticket through LLM and determine if effort estimation is accurate
             if (tickets.length > 1){
-                
+
             } else {
 
             }
