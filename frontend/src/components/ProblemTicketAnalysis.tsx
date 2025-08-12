@@ -30,9 +30,19 @@ type ProblemAnalysisSummaryResults = {
      [key: string]: number;
 }
 
+type analysisResult = {
+    id: number,
+    summary: string,     //html
+    description: string, //html
+    headers: string[],
+    scores: number[],
+    average: number
+}
+
 const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTicketAnalysisProps) => {
     const [query, updateQueryId] = useState<string>("");
-    const [chat, updateChat] = useState<JSX.Element>();
+    const [results, setResults] = useState<undefined | analysisResult[]>()
+    const [chat, updateChat] = useState<string>("");
     const context = `You are a senior System Design Engineer scoring problem analysis summaries based on the problem work item template and any additional prompts by the user.
                      This is the problem analysis summary template:
                      \`\`\`
@@ -52,7 +62,6 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
     const threshold = 0.5; // if value is <= threshold then it is not good enough!
 
     const chatRef = useRef(null)
-
     const user = useAuth()!
 
     const analyseTicket = async (id: number, summary:string, description: string): Promise<ProblemAnalysisSummaryResults> => {
@@ -74,97 +83,40 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
 
     // TODO: Add status update messages
     const search = () => {
-        if (!Number.isNaN(Number(query))) {
-            const ticketId = Number(query);
-            (async ()=>{
-                updateChat(<span>"Loading..."</span>)
-                const ticketType = await getType(ticketId, user.token)
-                if (ticketType.type.id === almTypeIds.problem || ticketType.id === -1) {
-                    updateChat(<span>{`${ticketId} not found or was not a problem ticket.`}</span>);
-                } else {
-                    const ticketSummary = await getFormattedSummary(ticketId, user.token);
-                    const ticketProblem = await getProblemAnalysisSummary(ticketId, user.token)
-                    return analyseTicket(ticketId, ticketSummary.formattedSummary, ticketProblem.description)
-                }
-                return null
-            })().then((res: ProblemAnalysisSummaryResults | null) =>{
-                if (res) {
-                    const data = Object.keys(res.response).map(k=>({name: k, value: res[k]}))
-                    updateChat(
-                        <div>
-                            {Object.keys(res.response).map(k=>(`${k}:${res[k]};`))}
-                            <FixedBarChart data={data}/>
-                        </div>
-                    )
+        updateChat(`Loading...`);
+        (async ()=>{
+            // filter only Problem ticket Ids
+            const ticketIds = !Number.isNaN(Number(query)) ? [Number(query)] : await getIDsFromQuery(query, user.token)
+            const ticketTypes = await getManyType(ticketIds, user.token)
+            const filteredTicketIds = ticketTypes.filter(ticket=>almTypeIds.problem === ticket.type.id).map(ticket=>ticket.id)
+            // get ticket problem summaries
+            const problemTickets = await getManyProblemTicket(filteredTicketIds, user.token)
+            // apply AI to each id
+            const response = problemTickets.map(async ticket=>
+                ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.description, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.description)}))
+            // Wait for all promises to resolve
+            return Promise.all(response)
+        })().then(results=>{
+            const filteredResults = results.filter(ticket=>
+                Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=threshold ? true : acc, false)
+            )
+            const fullResults = filteredResults.map(ticket=>{
+                const keys = Object.keys(ticket.response)
+                return {
+                    id: ticket.id,
+                    summary: ticket.summary,
+                    description: ticket.description,
+                    headers: keys,
+                    scores: keys.map(k=>ticket.response[k]),
+                    average: Math.round(keys.reduce((acc, k)=>acc+ticket.response[k], 0)/keys.length*100)/100
                 }
             })
-        } else {
-            updateChat(<span>Loading...</span>);
-            //return
-            (async ()=>{
-                // filter only Problem ticket Ids
-                const ticketIds = await getIDsFromQuery(query, user.token)
-                const ticketTypes = await getManyType(ticketIds, user.token)
-                const filteredTicketIds = ticketTypes.filter(ticket=>almTypeIds.problem === ticket.type.id).map(ticket=>ticket.id)
-                // get ticket problem summaries
-                const problemTickets = await getManyProblemTicket(filteredTicketIds, user.token)
-                // apply AI to each id
-                const response = problemTickets.map(async ticket=>
-                    ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.description, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.description)}))
-                // Wait for all promises to resolve
-                return Promise.all(response)
-            })().then(results=>{
-                const filteredResults = results.filter(ticket=>
-                    Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=threshold ? true : acc, false)
-                )
-                // const fullResults = filteredResults.map(ticket=>{
-                //     const keys = Object.keys(ticket.response)
-                //     return {
-                //         id: ticket.id,
-                //         summary: ticket.summary,
-                //         description: ticket.description,
-                //         headers: keys,
-                //         scores: keys.map(k=>ticket.response[k]),
-                //         average: Math.round(keys.reduce((acc, k)=>acc+ticket.response[k], 0)/keys.length*100)/100
-                //     }
-                // })
-                const tableBody = filteredResults.map(ticket=>(
-                    <TableRow>
-                        <TableCell><a href={`${almWorkItemUrl}/${ticket.id}`}>{ticket.id}</a></TableCell>
-                        <Tooltip>
-                            <TooltipTrigger asChild><TableCell>{
-                                Math.round(((Object.keys(ticket.response).reduce((acc, k)=>acc+ticket.response[k], 0))/Object.keys(ticket.response).length)*100)/100
-                            }</TableCell></TooltipTrigger>
-                            <TooltipContent><Table>
-                                <TableBody>{Object.keys(ticket.response).map(k=>(<TableRow><TableCell>{k}</TableCell><TableCell>{ticket.response[k]}</TableCell></TableRow>))}</TableBody>
-                                <TableFooter><TableRow><TableCell>Average</TableCell><TableCell>{Math.round(((Object.keys(ticket.response).reduce((acc, k)=>acc+ticket.response[k], 0))/Object.keys(ticket.response).length)*100)/100}</TableCell></TableRow></TableFooter>
-                            </Table></TooltipContent>
-                        </Tooltip>
-                        <Tooltip delayDuration={1500}>
-                            <TooltipTrigger asChild><TableCell>{ticket.summary}</TableCell></TooltipTrigger>
-                            <TooltipContent><span dangerouslySetInnerHTML={{ __html: ticket.description }}/></TooltipContent>
-                        </Tooltip>
-                    </TableRow>
-                ))
-                // TODO: Format ID Cell to look like buttons
-                // TODO: On row hover, show precise scores
-                updateChat(<Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <Tooltip>
-                                <TooltipTrigger asChild><TableHead>Score</TableHead></TooltipTrigger>
-                                <TooltipContent><span>Average score of all headers for this ticket. If any header is below 0.5, the ticket will appear on this list.</span></TooltipContent>
-                            </Tooltip>
-                            <TableHead>Summary</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {tableBody}
-                    </TableBody>
-                </Table>)
-            })
-        }
+            setResults(fullResults)
+        }).catch(err=>{
+            console.error(err)
+            setResults(undefined)
+            updateChat(String(err))
+        })
     }
 
     return ( 
@@ -184,7 +136,46 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                 >Analyse Tickets</button>
             </div>
             <span className={`${outputStyle2} flex-grow`} ref={chatRef}>
-                {chat}
+                {results ? 
+                    (results.length > 1 ?
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ID</TableHead>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild><TableHead>Score</TableHead></TooltipTrigger>
+                                        <TooltipContent><span>Average score of all headers for this ticket. If any header is below 0.5, the ticket will appear on this list.</span></TooltipContent>
+                                    </Tooltip>
+                                    <TableHead>Summary</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {results.map(result=>(
+                                    <TableRow>
+                                        <TableCell><a href={`${almWorkItemUrl}/${result.id}`}>{result.id}</a></TableCell>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild><TableCell>{result.average}</TableCell></TooltipTrigger>
+                                            <TooltipContent><Table>
+                                                <TableBody>{result.headers.map((k, i)=>(<TableRow>
+                                                    <TableCell>{k}</TableCell>
+                                                    <TableCell>{result.scores[i]}</TableCell>
+                                                </TableRow>))}</TableBody>
+                                                <TableFooter><TableRow><TableCell>Average</TableCell><TableCell>{result.average}</TableCell></TableRow></TableFooter>
+                                            </Table></TooltipContent>
+                                        </Tooltip>
+                                        <Tooltip delayDuration={1500}>
+                                            <TooltipTrigger asChild><TableCell><span dangerouslySetInnerHTML={{__html: result.summary}}/></TableCell></TooltipTrigger>
+                                            <TooltipContent><span dangerouslySetInnerHTML={{ __html: result.description }}/></TooltipContent>
+                                        </Tooltip>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    : <>
+                        <h3 dangerouslySetInnerHTML={{__html:results![0].summary}}/><br/>
+                        <FixedBarChart data={results![0].headers.map((name, i)=>({name, value: results![0].scores[i]}))}/>
+                        <span dangerouslySetInnerHTML={{__html:results![0].description}}/>
+                    </>) : chat}
             </span>
         </div>
     )

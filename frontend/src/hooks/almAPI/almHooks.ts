@@ -7,13 +7,14 @@ import { getWorkItemDetails, getWorkItemsDetails, getQueryDetails } from '../Par
 const requestAPI = async (url: string, token: string):Promise<apiResponse> => {
     try{
         const response = await axios.post(
-        url, 
-        null, 
-        {
-            headers: {
-            'Authorization': token
+            url, 
+            null, 
+            {
+                headers: {
+                'Authorization': token
+                }
             }
-        });
+        );
         const res = response.data as apiResponse;
         if (res.error) throw res.error;
         return res;
@@ -24,7 +25,7 @@ const requestAPI = async (url: string, token: string):Promise<apiResponse> => {
             api: "Error in API response.",
             error: error as string
         }
-        return res;
+        throw res;
     }
 };
 
@@ -39,7 +40,7 @@ const getOverviewFromID = async (id: number, token: string): Promise<Pick<almWor
             formattedDescription: workItem.formattedDescription ?? "",
         };
     } catch {
-        return {id: -1, formattedSummary: "", formattedDescription: ""};
+        throw `Error in fetching overview of ${id}`
     };
 };
 
@@ -53,33 +54,18 @@ const getFormattedSummary = async (id: number, token: string): Promise<Pick<almW
             formattedSummary: workItem.formattedSummary ?? "",
         };
     } catch {
-        return {id: -1, formattedSummary: ""};
+        throw `Error in fetching summary of ${id}`
     };
 };
 
-const getManyFormattedSummary = async (ids: number[], token: string): Promise<Pick<almWorkItem, "id" | "formattedSummary">[]> => {
-    const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '')
-    const url = `${apiWorkItemUrl}/workItem[${idSection.slice(0, -4)}]/(id|formattedSummary)`;
-    try {
-        const res = await requestAPI(url, token);
-        const workItems = getWorkItemsDetails(res.api).workItem
-        const result = workItems.map(workItem=>({
-            id: workItem.id ?? -1,
-            formattedSummary: workItem.formattedSummary ?? "",
-        }))
-        return result
-    } catch {
-        return [{id: -1, formattedSummary: ""}];
-    };
-};
 
 const getIDsFromQuery = async (queryId: string, token: string):Promise<number[]> => {
     const url = `${apiQueryUrl}/${queryId}/rtc_cm:results?oslc_cm.properties=dc:identifier`;
     try {
         const res = await requestAPI(url, token)
         return getQueryDetails(res.api).oslc_cmChangeRequest?.map(el=>Number(el.dcidentifier)) ?? [];
-    } catch {
-        return []
+    } catch (err) {
+        throw `Error in fetching Query ID: ${queryId}`
     }
 };
 
@@ -90,7 +76,7 @@ const getFormattedDescription = async (id: number, token: string):Promise<Pick<a
         const workItem = getWorkItemDetails(res.api).workItem!
         return {id: workItem.id ?? -1, formattedDescription: workItem.formattedDescription ?? ""};
     } catch {
-        return {id: -1, formattedDescription: ""};
+        throw `Error in fetching description of ${id}`;
     };
 };
 
@@ -101,7 +87,7 @@ const getParentId = async (id: number, token: string):Promise<Pick<almWorkItem, 
         const workItem = getWorkItemDetails(res.api).workItem!
         return {id: workItem.id ?? -1, parent: workItem.parent ?? undefined};
     } catch {
-        return {id: -1, parent: undefined};
+        throw `Error in fetching parent of ${id}`
     }
 };
 
@@ -112,20 +98,25 @@ const getType = async (id:number, token:string):Promise<Pick<almWorkItem, "id" |
         const workItem = getWorkItemDetails(res.api).workItem!
         return {id: workItem.id ?? -1, type: workItem.type ?? {id: "type not found", name: "type not found"}};
     } catch (error) {
-        return {id: -1, type: {id: String(error), name: String(error)}};
+        throw `Error in fetching type of ${id}`
     }
 }
 
 const getManyType = async (ids:number[], token:string):Promise<Pick<almWorkItem, "id" | "type">[]> => {
-    const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
-    const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|type/*)`;
-    try {
-        const res = await requestAPI(url, token);
-        const workItems = getWorkItemsDetails(res.api).workItem;
-        const results = workItems.map(workItem=>({id: workItem.id ?? -1, type: workItem.type ?? {id: "type not found", name: "type not found"}}));
-        return results;
-    } catch (error) {
-        return [{id: -1, type: {id: String(error), name: String(error)}}];
+    if (ids.length === 1){
+        const type = await getType(ids[0], token)
+        return [type]
+    } else {
+        const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
+        const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|type/*)`;
+        try {
+            const res = await requestAPI(url, token);
+            const workItems = getWorkItemsDetails(res.api).workItem;
+            const results = workItems.map(workItem=>({id: workItem.id ?? -1, type: workItem.type ?? {id: "type not found", name: "type not found"}}));
+            return results;
+        } catch (error) {
+            throw `Error in fetching types of ${ids}`
+        }
     }
 }
 
@@ -137,7 +128,7 @@ const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWor
         const workItem = getWorkItemDetails(res.api).workItem!
         return {id: workItem.id ?? -1, summaryAnalysis: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
     } catch {
-        return {id: -1, summaryAnalysis: ""}
+        throw `Error in fetching Summary Analysis of ${id}`
     }
 };
 
@@ -148,21 +139,27 @@ const getProblemAnalysisSummary = async (id: number, token: string):Promise<Pick
         const workItem = getWorkItemDetails(res.api).workItem!
         return {id: workItem.id ?? -1, description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
     } catch {
-        return {id: -1, description: ""}
+        throw `Error in fetching problem analysis of ${id}`
     }
 };
 
 const getManyProblemTicket = async (ids: number[], token: string):Promise<(Pick<almWorkItem, "id" | "formattedSummary"> & {description: almExtension["largeStringValue"]})[]> => {
-    const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
-    const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|formattedSummary|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
-    try {
-        const res = await requestAPI(url, token);
-        const workItems = getWorkItemsDetails(res.api).workItem
-        const result = workItems.map(workItem =>
-            ({id: workItem.id ?? -1, formattedSummary: workItem.formattedSummary ?? "", description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}))
-        return result
-    } catch {
-        return [{id: -1, formattedSummary: "", description: ""}]
+    if (ids.length === 1){
+        const problemAnalysis = await getProblemAnalysisSummary(ids[0], token)
+        const summary = await getFormattedSummary(ids[0], token)
+        return [{id: problemAnalysis.id, formattedSummary: summary.formattedSummary, description: problemAnalysis.description}]
+    } else {
+        const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
+        const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|formattedSummary|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
+        try {
+            const res = await requestAPI(url, token);
+            const workItems = getWorkItemsDetails(res.api).workItem
+            const result = workItems.map(workItem =>
+                ({id: workItem.id ?? -1, formattedSummary: workItem.formattedSummary ?? "", description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}))
+            return result
+        } catch {
+           throw `Error in fetching problem analysis of ${ids}`
+        }
     }
 };
 
