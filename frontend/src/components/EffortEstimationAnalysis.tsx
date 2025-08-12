@@ -54,11 +54,11 @@ const EffortEstimationAnalysis: React.FC<EffortEstimationAnalysisProps> = (_:Eff
             return results
         })().then(tickets=>{
             // run each ticket through LLM and determine if effort estimation is accurate
-            if (tickets.length > 1){
+            // if (tickets.length > 1){
 
-            } else {
+            // } else {
 
-            }
+            // }
         })
     }
 
@@ -71,7 +71,7 @@ const EffortEstimationAnalysis: React.FC<EffortEstimationAnalysisProps> = (_:Eff
     return (
         <div className={tabStyle1}>
             <span className={titleStyle1}>
-                This tool will investigate the effort estimations of the child SYSX00 tickets compared to the parent tickets provided. Enter a query ID to begin:
+                [WIP]: This tool will investigate the effort estimations of the child SYSX00 tickets compared to the parent tickets provided. Currently not finished :(
             </span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem]'>
                 <input 
