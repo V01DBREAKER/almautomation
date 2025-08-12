@@ -30,6 +30,7 @@ secrets/*
 # test scripts
 test.js
 test_scripts
+start.bat
 
 # build/installer generated files
 ALMAutomation.exe
