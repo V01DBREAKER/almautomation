@@ -6,7 +6,8 @@ import { askChat4omini} from '../hooks/llmAPI/llmHooks';
 import { buttonStyle2, inputStyle1, outputStyle1, outputStyle2, tabStyle1, titleStyle1 } from './ComponentStyles';
 import { almProblemAnalysisSummaryTemplate } from '../hooks/almAPI/almTemplates';
 import FixedBarChart from './FixedBarChart';
-import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead } from './ui/table';
+import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead, TableFooter,  } from './ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface ProblemTicketAnalysisProps {}
 
@@ -98,7 +99,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                 }
             })
         } else {
-            updateChat(<span>"Functionality not implemented for queryIds yet, use a ticket id instead."</span>);
+            updateChat(<span>Loading...</span>);
             //return
             (async ()=>{
                 // filter only Problem ticket Ids
@@ -109,29 +110,52 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                 const problemTickets = await getManyProblemTicket(filteredTicketIds, user.token)
                 // apply AI to each id
                 const response = problemTickets.map(async ticket=>
-                    ({id: ticket.id, summary: ticket.formattedSummary, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.description)}))
+                    ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.description, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.description)}))
                 // Wait for all promises to resolve
                 return Promise.all(response)
             })().then(results=>{
                 const filteredResults = results.filter(ticket=>
-                    Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=0.5 ? true : acc, false)
+                    Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=threshold ? true : acc, false)
                 )
-                const tableBody = filteredResults.map(ticket=>
+                // const fullResults = filteredResults.map(ticket=>{
+                //     const keys = Object.keys(ticket.response)
+                //     return {
+                //         id: ticket.id,
+                //         summary: ticket.summary,
+                //         description: ticket.description,
+                //         headers: keys,
+                //         scores: keys.map(k=>ticket.response[k]),
+                //         average: Math.round(keys.reduce((acc, k)=>acc+ticket.response[k], 0)/keys.length*100)/100
+                //     }
+                // })
+                const tableBody = filteredResults.map(ticket=>(
                     <TableRow>
                         <TableCell><a href={`${almWorkItemUrl}/${ticket.id}`}>{ticket.id}</a></TableCell>
-                        <TableCell>{
-                            (Object.keys(ticket.response).reduce((acc, k)=>acc+ticket.response[k], 0))/Object.keys(ticket.response).length
-                        }</TableCell>
-                        <TableCell>{ticket.summary}</TableCell>
+                        <Tooltip>
+                            <TooltipTrigger asChild><TableCell>{
+                                Math.round(((Object.keys(ticket.response).reduce((acc, k)=>acc+ticket.response[k], 0))/Object.keys(ticket.response).length)*100)/100
+                            }</TableCell></TooltipTrigger>
+                            <TooltipContent><Table>
+                                <TableBody>{Object.keys(ticket.response).map(k=>(<TableRow><TableCell>{k}</TableCell><TableCell>{ticket.response[k]}</TableCell></TableRow>))}</TableBody>
+                                <TableFooter><TableRow><TableCell>Average</TableCell><TableCell>{Math.round(((Object.keys(ticket.response).reduce((acc, k)=>acc+ticket.response[k], 0))/Object.keys(ticket.response).length)*100)/100}</TableCell></TableRow></TableFooter>
+                            </Table></TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={1500}>
+                            <TooltipTrigger asChild><TableCell>{ticket.summary}</TableCell></TooltipTrigger>
+                            <TooltipContent><span dangerouslySetInnerHTML={{ __html: ticket.description }}/></TooltipContent>
+                        </Tooltip>
                     </TableRow>
-                )
+                ))
                 // TODO: Format ID Cell to look like buttons
                 // TODO: On row hover, show precise scores
                 updateChat(<Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>ID</TableHead>
-                            <TableHead>Average Score</TableHead>
+                            <Tooltip>
+                                <TooltipTrigger asChild><TableHead>Score</TableHead></TooltipTrigger>
+                                <TooltipContent><span>Average score of all headers for this ticket. If any header is below 0.5, the ticket will appear on this list.</span></TooltipContent>
+                            </Tooltip>
                             <TableHead>Summary</TableHead>
                         </TableRow>
                     </TableHeader>
