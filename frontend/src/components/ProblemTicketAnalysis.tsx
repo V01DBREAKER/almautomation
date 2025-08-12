@@ -94,7 +94,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
             const problemTickets = await getManyProblemTicket(filteredTicketIds, user.token)
             // apply AI to each id
             const response = problemTickets.map(async ticket=>
-                ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.description, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.description)}))
+                ({id: ticket.id, summary: ticket.formattedSummary, description: ticket.problemAnalysisSummary, response: await mockAnalyseTicket(ticket.id, ticket.formattedSummary, ticket.problemAnalysisSummary)}))
             // Wait for all promises to resolve
             return Promise.all(response)
         })().then(results=>{

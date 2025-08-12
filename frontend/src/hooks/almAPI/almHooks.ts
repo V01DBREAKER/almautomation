@@ -132,22 +132,22 @@ const getSummaryAnalysis = async (id: number, token: string):Promise<Pick<almWor
     }
 };
 
-const getProblemAnalysisSummary = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {description: almExtension["largeStringValue"]}> => {
+const getProblemAnalysisSummary = async (id: number, token: string):Promise<Pick<almWorkItem, "id"> & {problemAnalysisSummary: almExtension["largeStringValue"]}> => {
     const url = `${apiWorkItemUrl}/workItem[id=${id}]/(id|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
     try {
         const res = await requestAPI(url, token);
         const workItem = getWorkItemDetails(res.api).workItem!
-        return {id: workItem.id ?? -1, description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
+        return {id: workItem.id ?? -1, problemAnalysisSummary: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}
     } catch {
         throw `Error in fetching problem analysis of ${id}`
     }
 };
 
-const getManyProblemTicket = async (ids: number[], token: string):Promise<(Pick<almWorkItem, "id" | "formattedSummary"> & {description: almExtension["largeStringValue"]})[]> => {
+const getManyProblemTicket = async (ids: number[], token: string):Promise<(Pick<almWorkItem, "id" | "formattedSummary"> & {problemAnalysisSummary: almExtension["largeStringValue"]})[]> => {
     if (ids.length === 1){
         const problemAnalysis = await getProblemAnalysisSummary(ids[0], token)
         const summary = await getFormattedSummary(ids[0], token)
-        return [{id: problemAnalysis.id, formattedSummary: summary.formattedSummary, description: problemAnalysis.description}]
+        return [{id: problemAnalysis.id, formattedSummary: summary.formattedSummary, problemAnalysisSummary: problemAnalysis.problemAnalysisSummary}]
     } else {
         const idSection = ids.reduce((acc, id)=>acc+`id=${id} or `, '').slice(0, -4)
         const url = `${apiWorkItemUrl}/workItem[${idSection}]/(id|formattedSummary|allExtensions[key=com.bosch.ae.be.team.workitem.attribute.ProblemAnalysisSummary]/largeStringValue)`;
@@ -155,7 +155,7 @@ const getManyProblemTicket = async (ids: number[], token: string):Promise<(Pick<
             const res = await requestAPI(url, token);
             const workItems = getWorkItemsDetails(res.api).workItem
             const result = workItems.map(workItem =>
-                ({id: workItem.id ?? -1, formattedSummary: workItem.formattedSummary ?? "", description: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}))
+                ({id: workItem.id ?? -1, formattedSummary: workItem.formattedSummary ?? "", problemAnalysisSummary: (workItem.allExtensions && "largeStringValue" in workItem.allExtensions) ? workItem.allExtensions.largeStringValue : ""}))
             return result
         } catch {
            throw `Error in fetching problem analysis of ${ids}`
