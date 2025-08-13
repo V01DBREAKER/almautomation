@@ -66,7 +66,7 @@ begin
     ConfigFile := ExpandConstant('{app}\secrets\.env');
     ConfigContent := Format('LLM_API_KEY=%s', [APIKey]);
     SaveStringToFile(ConfigFile, ConfigContent, false);
-    SaveStringToFile(ConfigFile, #13#10+'VITE_PORT=3000', True);
+    SaveStringToFile(ConfigFile, #13#10+'PORT=3000', True);
     end;
 
     Result := True
