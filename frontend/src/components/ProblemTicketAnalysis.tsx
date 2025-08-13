@@ -86,18 +86,18 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
             'Effort Estimate Summary': Math.random()
         } as ProblemAnalysisSummaryResults;
     }
+     
 
-    // TODO: Add status update messages
     const search = () => {
         updateChat(`Loading...`);
         (async ()=>{
             // filter only Problem ticket Ids
             const ticketIds = !Number.isNaN(Number(query)) ? [Number(query)] : await getIDsFromQuery(query, user.token)
             updateChat(`Found tickets...`);
-            const analyser = ticketIds.length <= 5 ? analyseTicket : mockAnalyseTicket
+            const analyser = ticketIds.length <= 10 ? analyseTicket : mockAnalyseTicket
             const ticketTypes = await getManyType(ticketIds, user.token)
             updateChat(`Filtering non-problem type tickets...`);
-            const filteredTicketIds = ticketTypes.filter(ticket=>almTypeIds.problem === ticket.type.id).map(ticket=>ticket.id)
+            const filteredTicketIds = ticketIds.length == 1 ? ticketIds : ticketTypes.filter(ticket=>almTypeIds.problem === ticket.type.id).map(ticket=>ticket.id)
             // get ticket problem summaries
             updateChat(`Getting ticket details...`);
             const problemTickets = await getManyProblemTicket(filteredTicketIds, user.token)
@@ -110,7 +110,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
         })().then((searchResult)=>{
             const {results, totalTickets} = searchResult
             updateChat(`Filtering tickets for scores under 0.5 on any header`);
-            const filteredResults = results.filter(ticket=>
+            const filteredResults = totalTickets == 1 ? results : results.filter(ticket=>
                 Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=threshold ? true : acc, false)
             )
             const ticketResults = filteredResults.map(ticket=>{
@@ -124,6 +124,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                     average: Math.round(keys.reduce((acc, k)=>acc+ticket.response[k], 0)/keys.length*100)/100
                 }
             })
+            if (ticketResults.length < 1) throw "No tickets which match the criteria found. Type:Problem; AIScore:headers<0.5";
             const finalResults = {analysis: ticketResults, total: totalTickets} as searchResults
             setResults(finalResults)
         }).catch(err=>{
@@ -136,7 +137,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
     return ( 
         <div className={tabStyle1}>
             <span className={titleStyle1}>
-                Enter a query Id containing problem tickets for the AI to analyse.<br/>Note: the scoring by AI is fake if the query has more than 5 tickets, to save on tokens.
+                Enter a query Id containing problem tickets for the AI to analyse.<br/>Note: the scoring by AI is fake if the query has more than 10 tickets, to save on tokens.
             </span>
             <div className='grid grid-cols-4 my-[0.2rem] h-[2rem] gap-[0.2rem]'>
                 <input 
@@ -197,6 +198,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                             </TableBody>
                         </Table>
                     </div>: <>
+                        {console.log(results)}
                         <h3 dangerouslySetInnerHTML={{__html:results!.analysis[0].summary}}/><br/>
                         <FixedBarChart data={results!.analysis[0].headers.map((name, i)=>({name, value: results!.analysis[0].scores[i]}))}/>
                         <span dangerouslySetInnerHTML={{__html:results!.analysis[0].description}}/>

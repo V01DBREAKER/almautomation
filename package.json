@@ -5,10 +5,11 @@
   "type": "commonjs",
   "scripts": {
     "frontend": "bunx --bun vite frontend",
-    "build-frontend": "bunx --bun vite build frontend",
+    "frontend-build": "bunx --bun vite build frontend",
+    "frontend-watch": "bunx --bun vite build frontend --watch",
     "backend": "bun run backend/src/server.ts 3001 false",
-    "dev": "bun run build-frontend && bun run backend/src/server.ts",
-    "compile": "bun run build-frontend && bun run compile-back",
+    "dev": "concurrently 'bun run frontend-watch' 'bun run backend/src/server.ts 3001 true'",
+    "compile": "bun run frontend-build && bun run compile-back",
     "compile-back": "bun build --compile --minify --sourcemap --target=bun-windows-x64 backend/src/server.ts --outfile ALMAutomation"
   },
   "dependencies": {
