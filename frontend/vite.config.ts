@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
-    port: 5222,
+    port: 3001,
   },
   envDir: "../secrets",
   base:"./",

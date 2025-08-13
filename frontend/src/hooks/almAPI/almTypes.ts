@@ -260,7 +260,7 @@ interface apiQuery {
 
 const almTypeIds = {problem: "com.bosch.rtc.configuration.workitemtype.type.problem"};
 
-const apiBaseUrl = "https://localhost:3001/api";
+const apiBaseUrl = `/api`;
 const apiAccessUrl = apiBaseUrl + "/alm";
 const apiLoginUrl = apiBaseUrl + "/login";
 const apiWorkItemUrl = apiAccessUrl + "/rpt/repository/workitem?fields=workitem";

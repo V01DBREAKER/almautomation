@@ -14,13 +14,9 @@ To run this tool you'll need an LLM farm key and RB Local Proxy Manager
 4. Then open the server url on your web browser, typically `https://localhost:3001` 
 
 ### Troubleshooting:
-If the terminal instantly closes, put the following code in a text file in the same directory as the executable, rename it to `start.bat` then run the file to view the error.
-```
-@echo off
-ALMAutomation.exe
-pause
-```
-If the terminal gives you an error that the port is in use, you may have another program running on that port in which case change the PORT value in `./secrets/.env`
+If the terminal instantly closes or you are having problems logging in, try running `start.bat` instead.\
+(Since its a batch file, always make sure you examine the code before running it.)\
+If the terminal gives you an error that the port is in use, you may have another program running on that port in which case change the VITE_PORT value in `./secrets/.env`
 ![alt text](docs/{36574B6B-ADA6-47AE-8243-DDAF06AB771D}.png)
 
 ### Running RB Local Proxy Manager with Px:
