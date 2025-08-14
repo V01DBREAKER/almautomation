@@ -37,7 +37,8 @@ type analysisResult = {
     description: string, //html
     headers: string[],
     scores: number[],
-    average: number
+    average: number,
+    reasoning: string, // reasoning from AI
 }
 
 type searchResults = {
@@ -56,11 +57,14 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                      \`\`\`
                      Give each header a score between 0 to 1 and return this score as json at the start of your response with the following format:
                      {"Header_name":score,"header2_name":score,"header3_name":score} where score is an floating point number between 0 and 1.
-                     Ensure that your response is pure JSON. Do not include chatter. If your response is not a pure JSON, the system will crash.`;
+                     Ensure that the JSON is at the beginning of your response, then include your reasoning afterwards. 
+                     Your reasoning must be formatted as HTML.
+                     Split the json and reasoning with a newline.`;
     const promptStart= `Given the following ticket titled,
                         \``
     const promptMiddle = `\`
                           How well has the author filled and addressed the template headers? 
+                          Be critical with your assessment and score it 0 if the ticket has not changed a header from the template. 
                           Ticket:
                           \`\`\``;
     const promptEnd = "\n```";
@@ -70,21 +74,25 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
     const chatRef = useRef(null)
     const user = useAuth()!
 
-    const analyseTicket = async (summary:string, description: string): Promise<ProblemAnalysisSummaryResults> => {
-        const json = (await askChat4omini(context, promptStart + summary + promptMiddle + description + promptEnd, user.token)).choices[0].message.content
-        return JSON.parse(json)
+    const analyseTicket = async (summary:string, description: string): Promise<{json: ProblemAnalysisSummaryResults, reasoning:string}> => {
+        const response = (await askChat4omini(context, promptStart + summary + promptMiddle + description + promptEnd, user.token)).choices[0].message.content
+        const json = response.split("\n")[0].trim()
+        return {json: JSON.parse(json), reasoning: response.split("\n").slice(1).join("\n").trim()}
     } 
 
-    const mockAnalyseTicket = async (summary: string, description: string): Promise<ProblemAnalysisSummaryResults> => {
+    const mockAnalyseTicket = async (summary: string, description: string):  Promise<{json: ProblemAnalysisSummaryResults, reasoning:string}> => {
         return {
-            'Root Cause': Math.random(),
-            Dependencies: Math.random(),
-            'Corrective Actions': Math.random(),
-            Impacts: Math.random(),
-            Recommendations: Math.random(),
-            'Reason for delay of analysis': Math.random(),
-            'Effort Estimate Summary': Math.random()
-        } as ProblemAnalysisSummaryResults;
+                json: {
+                    'Root Cause': Math.random(),
+                    Dependencies: Math.random(),
+                    'Corrective Actions': Math.random(),
+                    Impacts: Math.random(),
+                    Recommendations: Math.random(),
+                    'Reason for delay of analysis': Math.random(),
+                    'Effort Estimate Summary': Math.random()
+                } as ProblemAnalysisSummaryResults, 
+                reasoning: "This is a mock response, the scores are randomly generated to save on tokens." 
+        }       
     }
      
 
@@ -111,17 +119,18 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
             const {results, totalTickets} = searchResult
             updateChat(`Filtering tickets for scores under 0.5 on any header`);
             const filteredResults = totalTickets == 1 ? results : results.filter(ticket=>
-                Object.keys(ticket.response).reduce((acc, k)=>ticket.response[k]<=threshold ? true : acc, false)
+                Object.keys(ticket.response.json).reduce((acc, k)=>ticket.response.json[k]<=threshold ? true : acc, false)
             )
             const ticketResults = filteredResults.map(ticket=>{
-                const keys = Object.keys(ticket.response)
+                const keys = Object.keys(ticket.response.json)
                 return {
                     id: ticket.id,
                     summary: ticket.summary,
                     description: ticket.description,
                     headers: keys,
-                    scores: keys.map(k=>ticket.response[k]),
-                    average: Math.round(keys.reduce((acc, k)=>acc+ticket.response[k], 0)/keys.length*100)/100
+                    scores: keys.map(k=>ticket.response.json[k]),
+                    average: Math.round(keys.reduce((acc, k)=>acc+ticket.response.json[k], 0)/keys.length*100)/100,
+                    reasoning: ticket.response.reasoning,
                 }
             })
             if (ticketResults.length < 1) throw "No tickets which match the criteria found. Type:Problem; AIScore:headers<0.5";
@@ -189,7 +198,11 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                                             <Accordion type="single" collapsible>
                                                 <AccordionItem value='item-1'>
                                                     <AccordionTrigger className='p-0'><span dangerouslySetInnerHTML={{__html: result.summary}}/></AccordionTrigger>
-                                                    <AccordionContent><span dangerouslySetInnerHTML={{ __html: result.description }}/></AccordionContent>
+                                                    <AccordionContent>
+                                                        <span dangerouslySetInnerHTML={{ __html: result.description}}/>
+                                                        <br/><br/><hr/><h3 className='font-bold'>AI Reasoning:</h3>
+                                                        <span dangerouslySetInnerHTML={{__html: result.reasoning }}/>
+                                                    </AccordionContent>
                                                 </AccordionItem>
                                             </Accordion>
                                         </TableCell>
@@ -199,8 +212,11 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                         </Table>
                     </div>: <>
                         {console.log(results)}
-                        <h3 dangerouslySetInnerHTML={{__html:results!.analysis[0].summary}}/><br/>
+                        
+                        <h3 className='font-bold' dangerouslySetInnerHTML={{__html:results!.analysis[0].summary}}/><br/>
                         <FixedBarChart data={results!.analysis[0].headers.map((name, i)=>({name, value: results!.analysis[0].scores[i]}))}/>
+                        <hr/><h3 className='font-semibold'>AI Reasoning:</h3>
+                        <span dangerouslySetInnerHTML={{__html:results!.analysis[0].reasoning}}/><br/><hr/>
                         <span dangerouslySetInnerHTML={{__html:results!.analysis[0].description}}/>
                     </>) : chat}
             </span>
