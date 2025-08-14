@@ -1,10 +1,12 @@
-import { type JSX, useState, useEffect, useRef} from 'react'
-import { getFormattedSummary, getIDsFromQuery, getManyProblemTicket, getManyType, getProblemAnalysisSummary, getType} from '../hooks/almAPI/almHooks'
+import { useState, useRef} from 'react'
+
+import { getIDsFromQuery, getManyProblemTicket, getManyType } from '../hooks/almAPI/almHooks'
 import { useAuth } from '../hooks/AuthProvider'
 import { almTypeIds, almWorkItemUrl } from '../hooks/almAPI/almTypes';
 import { askChat4omini} from '../hooks/llmAPI/llmHooks';
-import { buttonStyle2, inputStyle1, outputStyle1, outputStyle2, tabStyle1, titleStyle1 } from './ComponentStyles';
 import { almProblemAnalysisSummaryTemplate } from '../hooks/almAPI/almTemplates';
+
+import { buttonStyle2, inputStyle1, outputStyle2, tabStyle1, titleStyle1 } from './ComponentStyles';
 import FixedBarChart from './FixedBarChart';
 import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead, TableFooter,  } from './ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -71,7 +73,7 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
 
     const threshold = 0.5; // if value is <= threshold then it is not good enough!
 
-    const chatRef = useRef(null)
+    const outputRef = useRef(null)
     const user = useAuth()!
 
     const analyseTicket = async (summary:string, description: string): Promise<{json: ProblemAnalysisSummaryResults, reasoning:string}> => {
@@ -117,11 +119,13 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
             return {results: await Promise.all(response), totalTickets: ticketIds.length}
         })().then((searchResult)=>{
             const {results, totalTickets} = searchResult
-            updateChat(`Filtering tickets for scores under 0.5 on any header`);
-            const filteredResults = totalTickets == 1 ? results : results.filter(ticket=>
-                Object.keys(ticket.response.json).reduce((acc, k)=>ticket.response.json[k]<=threshold ? true : acc, false)
-            )
-            const ticketResults = filteredResults.map(ticket=>{
+            // add toggle for filter
+            //updateChat(`Filtering tickets for scores under 0.5 on any header`);
+            // const filteredResults = totalTickets == 1 ? results : results.filter(ticket=>
+            //     Object.keys(ticket.response.json).reduce((acc, k)=>ticket.response.json[k]<=threshold ? true : acc, false)
+            // )
+            //const ticketResults = filteredResults.map(ticket=>{
+            const ticketResults = results.map(ticket=>{
                 const keys = Object.keys(ticket.response.json)
                 return {
                     id: ticket.id,
@@ -159,13 +163,13 @@ const ProblemTicketAnalysis: React.FC<ProblemTicketAnalysisProps> = (_:ProblemTi
                     onClick={search}
                 >Analyse Tickets</button>
             </div>
-            <span className={`${outputStyle2} flex flex-grow flex-col`} ref={chatRef}>
+            <span className={`${outputStyle2} flex flex-grow flex-col`} ref={outputRef}>
                 {results ? 
                     (results.analysis.length > 1 ? <div className='flex flex-grow flex-col'>
-                        <div className='w-full grid grid-cols-3'>
-                            <span className='flex text-left'>Results for &nbsp;<code className='bg-gray-100'>{query}</code></span>
-                            <span className='text-center'>Hover over score and click id or summary for ticket details.</span>
-                            <span className='text-right'><i>{results.analysis.length}</i>&nbsp;out of&nbsp;<i>{results.total}</i>&nbsp;found to have a header with score under&nbsp;<b>0.5</b></span>
+                        <div className='w-full flex items-center justify-evenly'>
+                            <span>Results for&nbsp;<code className='bg-gray-100'>{query}</code>.</span>
+                            <span>Hover over score and click id or summary for ticket details.</span>
+                            <span><i>{results.analysis.length}</i>&nbsp;out of&nbsp;<i>{results.total}</i>&nbsp;found to have a header with score under&nbsp;<b>0.5</b></span>
                         </div>
                         <Table>
                             <TableHeader>
