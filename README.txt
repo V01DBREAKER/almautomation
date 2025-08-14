@@ -9,43 +9,43 @@ To run this tool you'll need an LLM farm key and RB Local Proxy Manager
   (It will be under Local Proxy Support)
 
 ### Install and Run:
-1. Download the installer from releases and run it, provide the API key you recieved from Bosch.
+1. [Download the installer](https://sourcecode.socialcoding.bosch.com/users/lea6cl/repos/almautomation/browse/ALMAutomationInstaller.exe) and run it, provide the API key you recieved from Bosch.
    - If you don't have an API key yet, enter a random string in the installer and you can replace it later in `secrets/.env`
 2. Ensure RB Local Proxy Manager is running Px (see below)
 3. Run ALMAutomation.exe, it should open a terminal (and stay open)
 4. Then open the server url on your web browser, typically `https://localhost:3001` 
 
-### Operation:
+## Operation:
 Login with your Bosch username e.g BAC2CL and password:\
-![alt text](docs/{AE00D938-3A95-4E3D-B20D-DE7A01E1F8E1}.png)
+![alt text](docs/LoginScreen.png)
 
 ### Troubleshooting:
 If the terminal instantly closes or you are having problems logging in, try running `start.bat` instead.\
 (Since its a batch file, always make sure you examine the code before running it.)\
-If the terminal gives you an error that the port is in use, you may have another program running on that port in which case change the VITE_PORT value in `./secrets/.env`\
-![alt text](docs/{36574B6B-ADA6-47AE-8243-DDAF06AB771D}.png)
+If the terminal gives you an error that the port is in use, you may have another program running on that port in which case change the PORT value in `./secrets/.env`\
+![alt text](docs/PortError.png)\
+If you get this error, make sure your URL is **https** not http:
+![alt text](docs/HTTPError.png)
 
 ### Running RB Local Proxy Manager with Px:
 Run RB Local Proxy Manager\
-![alt text](docs/{C7171871-3A5D-4C91-8695-29395872F200}.png) \
+![alt text](docs/RBLocalProxySearch.png) \
 Click execute on Px status\
-![alt text](docs/image.png)\
+![alt text](docs/RunPX.png)\
 Make sure the port is `3128`!
 
-## Build from source:
+## Development:
 1. Clone the repo
 2. Install [Bun](https://bun.com/)
 3. Run `bun install` to install the dependencies
-
-### Run:
-- Use `bun run dev` and open `localhost:3001`
-- To compile, use `bun run compile`
-- To create installer, compile `./install.iss` with InnoSetup 
-  - Make sure to change the file paths!
+4. Use `bun run dev` and open `https://localhost:3001`
+5. To compile, use `bun run compile`
+6. To create installer, compile `./install.iss` with InnoSetup 
+  - Make sure to change the file paths in the install script!
 
 ## Details
-- React/TS/Vite frontend
-- Express/TS backend
-- Compiled/Static runs at `https://localhost:3001`.
+- React/TS/Vite frontend `http://localhost:5222`
+- Express/TS backend `https://localhost:3001`
+- Compiled/Static runs at `https://localhost:3001` for both front and back. Can be changed in env file.
 - If using AI features at work, you will need to be using RB Local Proxy Manager and running PX through it to local proxy.\
 - Currently this program uses basic authentication, we plan to move to a better system in future. *NOT SECURE*

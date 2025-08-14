@@ -5,12 +5,11 @@
   "type": "commonjs",
   "scripts": {
     "frontend": "bunx --bun vite frontend",
+    "backend": "bun run backend/src/server.ts false",
+    "dev": "concurrently 'bun run frontend' 'bun run backend",
     "frontend-build": "bunx --bun vite build frontend",
-    "frontend-watch": "bunx --bun vite build frontend --watch",
-    "backend": "bun run backend/src/server.ts 3001 false",
-    "dev": "concurrently 'bun run frontend-watch' 'bun run backend/src/server.ts 3001 true'",
-    "compile": "bun run frontend-build && bun run compile-back",
-    "compile-back": "bun build --compile --minify --sourcemap --target=bun-windows-x64 backend/src/server.ts --outfile ALMAutomation"
+    "compile-back": "bun build --compile --minify --sourcemap --target=bun-windows-x64 backend/src/server.ts --outfile ALMAutomation",
+    "compile": "bun run frontend-build && bun run compile-back"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",

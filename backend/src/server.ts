@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken';
 import { serve, BunRequest } from "bun";
 import { requestALM, requestLLM, convertAuthBasic } from './apiFunctions';
 import { generateSecrets } from './keyGen';
-import index from "../../frontend/dist/index.html";
+import { default as staticIndex } from "../../frontend/dist/index.html";
+import {default as dynamicIndex } from "../../frontend/index.html" 
 
 // move to config (EXTERNAL)
 const alm_base_url = "https://rb-alm-14-p.de.bosch.com/ccm";
@@ -27,8 +28,8 @@ dotenv.config({path: 'secrets/.env'})
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 
 const PORT = Number(process.env.PORT) || 3001;
-const FRONTEND_PORT = Number(process.argv[2]) || PORT;
-const HOST_FRONTEND = !(process.argv[3]==="false");
+const FRONTEND_PORT = Number(process.env.FRONTEND_PORT) || PORT;
+const STATIC_FRONTEND = !(process.argv[2]==="false");
 
 
 // replace with tokens from DNG
@@ -191,15 +192,19 @@ const server = serve({
     "/api/*": {
       OPTIONS: (req) => corsPrefight(req)
     },
-     "/*": HOST_FRONTEND ? index : {
-      GET: (req) => new Response(`Error 404: You'll need to build the frontend or if running the frontend separately go to http://localhost:${FRONTEND_PORT}`, {status: 404})
-     },
+    "/*": STATIC_FRONTEND ? staticIndex : {
+      GET: (req) => {
+        return Response.redirect(`http://localhost:${FRONTEND_PORT}`, 302);
+      }
     },
+  },
   port: PORT,
   tls: {
     key: Bun.file('secrets/server.key'),
     cert: Bun.file('secrets/server.cert')
   }
 });
+
+
 
 console.log(`Server running at https://localhost:${server.port}`);
