@@ -33,5 +33,6 @@ test_scripts
 start.bat
 
 # build/installer generated files
+typeGenFromSchema
 ALMAutomation.exe
 Output
